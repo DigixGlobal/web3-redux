@@ -1,0 +1,31 @@
+{
+  "name": "web3-redux",
+  "version": "0.0.1",
+  "description": "Reduxified Web3",
+  "author": "Chris Hitchcott <hitchcott@gmail.com> (http://hitchcott.com)",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "./node_modules/.bin/mocha --compilers js:babel-core/register --require ./registerBabel.js",
+    "dev": "./node_modules/.bin/mocha --watch --compilers js:babel-core/register --require ./registerBabel.js"
+  },
+  "dependencies": {
+    "immutable": "^3.8.1",
+    "redux": "^3.6.0",
+    "redux-immutable": "^3.0.8",
+    "redux-simple-crud": "0.0.5",
+    "redux-thunk": "^2.1.0"
+  },
+  "devDependencies": {
+    "assert": "^1.4.1",
+    "babel-core": "^6.18.2",
+    "babel-preset-es2015": "^6.18.0",
+    "babel-preset-stage-2": "^6.18.0",
+    "eslint": "^3.10.2",
+    "eslint-config-airbnb": "^13.0.0",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-jsx-a11y": "^2.2.3",
+    "eslint-plugin-react": "^6.7.1",
+    "mocha": "^3.1.2",
+    "web3": "^0.16.0"
+  }
+}
