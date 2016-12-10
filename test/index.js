@@ -12,6 +12,8 @@ web3.setProvider(provider);
 describe('web3-redux', function () {
   const web3Redux = reduxifyWeb3({ web3 });
   let txHash;
+  let defaultAccount;
+  let anotherAccount;
 
   describe('web3', function () {
     return ['eth.getAccounts', 'version.getNode'].map((key) => {
@@ -29,12 +31,12 @@ describe('web3-redux', function () {
   describe('contracts', function () {
     const regName = 'testing';
     let contract;
-    let defaultAccount;
     let methods;
     // deploy in testrpc
     before((done) => {
       web3.eth.getAccounts((err, accounts) => {
         defaultAccount = accounts[0];
+        anotherAccount = accounts[1];
         SimpleNameRegistry.setProvider(provider);
         SimpleNameRegistry.new({ from: defaultAccount, gas: 3000000 }).then((res) => {
           const { abi, address } = res;
@@ -50,9 +52,9 @@ describe('web3-redux', function () {
       .then((txId) => {
         const tx = store.getState().getIn(['contracts', contract.address, 'transactions', txId]);
         assert.ok(tx.txHash);
-        // save this for later
+        // save this for later test
         txHash = tx.txHash;
-        // HACK wait for it to be mined...
+        // HACK (for test) wait for it to be mined...
         return new Promise(resolve => setTimeout(resolve, 10));
       });
     });
@@ -69,11 +71,28 @@ describe('web3-redux', function () {
       return store.dispatch(web3Redux.eth.getTransaction(txHash))
       .then((res) => {
         assert.ok(res.blockHash);
-        assert.ok(store.getState().getIn(['transactions', txHash]).value.blockHash);
+        assert.equal(store.getState().getIn(['transactions', txHash]).value.blockHash, res.blockHash);
         return store.dispatch(web3Redux.eth.getTransactionReceipt(txHash));
       }).then((res) => {
-        assert.ok(res.logs);
-        assert.ok(store.getState().getIn(['transactions', txHash]).value.logs);
+        assert.ok(res.transactionHash);
+        assert.equal(store.getState().getIn(['transactions', txHash]).value.transactionHash, res.transactionHash);
+      });
+    });
+    it('uses transaction store with eth.sendTransaction', function () {
+      let newHash;
+      return store.dispatch(web3Redux.eth.sendTransaction({ from: defaultAccount, to: anotherAccount, value: 3 }))
+      .then((hash) => {
+        newHash = hash;
+        assert.ok(newHash);
+        assert.ok(store.getState().getIn(['transactions', newHash]).created);
+        return store.dispatch(web3Redux.eth.getTransaction(newHash));
+      }).then((res) => {
+        assert.ok(res.blockHash);
+        assert.equal(store.getState().getIn(['transactions', newHash]).value.blockHash, res.blockHash);
+        return store.dispatch(web3Redux.eth.getTransactionReceipt(newHash));
+      }).then((res) => {
+        assert.ok(res.transactionHash);
+        assert.equal(store.getState().getIn(['transactions', newHash]).value.transactionHash, res.transactionHash);
       });
     });
   });

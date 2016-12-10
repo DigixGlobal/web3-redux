@@ -15,7 +15,6 @@ export function createTransaction({ args, method }) {
       method.apply(null, args.concat([(err, txHash) => {
         if (err) { return reject(err); }
         dispatch({ type: actions.CREATED, txHash, created: new Date() });
-        // TODO start poll to get the tx details?
         return resolve(txHash);
       }]));
     });

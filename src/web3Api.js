@@ -23,4 +23,12 @@ export default {
   'eth.getTransaction': { actions: transactionActions.actions },
   'eth.getTransactionFromBlock': {},
   'eth.getTransactionReceipt': { actions: transactionActions.actions },
+  'eth.sendTransaction': {
+    actions: transactionActions.actions,
+    actionCreator: transactionActions.createTransaction,
+  },
+  'eth.sendRawTransaction': {
+    actions: transactionActions.actions,
+    actionCreator: transactionActions.createTransaction,
+  },
 };
