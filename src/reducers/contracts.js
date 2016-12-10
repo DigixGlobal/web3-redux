@@ -3,25 +3,13 @@ import { fromJS } from 'immutable';
 import { getArgsKey } from '../helpers';
 import { actions } from '../actions/contracts';
 
+import fetch from './fetch';
+
 export default function reducer(state = fromJS({}), action) {
-  console.log({ action });
   switch (action.type) {
-    case actions.DEPLOYING:
-      return state;
-    case actions.DEPLOYED:
-      return state;
-    case actions.GETTING:
-      return state.setIn(getArgsKey(action), { fetching: true });
-    case actions.GOT:
-      return state.setIn(getArgsKey(action), {
-        error: undefined,
-        fetching: undefined,
-        value: action.value,
-        block: 999, // state.currentBlock
-      });
-    case actions.FAILED:
-      return state.setIn(getArgsKey(action), { error: action.error });
+    case actions.UPDATED_TRANSACTION:
+      return state.setIn([action.address, 'transactions', action.id], action.payload);
     default:
-      return state;
+      return fetch(state, actions, action, getArgsKey(action));
   }
 }

@@ -13,7 +13,8 @@
     "redux": "^3.6.0",
     "redux-immutable": "^3.0.8",
     "redux-simple-crud": "0.0.5",
-    "redux-thunk": "^2.1.0"
+    "redux-thunk": "^2.1.0",
+    "uuid": "^3.0.1"
   },
   "devDependencies": {
     "assert": "^1.4.1",

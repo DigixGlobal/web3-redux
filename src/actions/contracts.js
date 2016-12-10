@@ -1,32 +1,33 @@
+import uuid from 'uuid';
 import { NAMESPACE } from '../constants';
-import { getWeb3Method } from './web3';
+import * as txActions from './transactions';
 
 export const actions = {
   DEPLOYING: `${NAMESPACE} deploying contract`,
   DEPLOYED: `${NAMESPACE} deployed contract`,
+  UPDATED_TRANSACTION: `${NAMESPACE} updated contract transaction status`,
   GETTING: `${NAMESPACE} getting contract method`,
   GOT: `${NAMESPACE} got contract method`,
   FAILED: `${NAMESPACE} failed to get contract method`,
 };
 
-export function deployContract() {
-
-}
-
-export function contractReduxMethods({ abi, address, web3 }) {
-  if (!address) { throw new Error('Address not defined'); }
-  const contract = web3.eth.contract(abi).at(address);
-  const api = {};
-  abi.forEach((definition) => {
-    if (definition.type !== 'function') { return; }
-    api[definition.name] = {};
-    ['transaction', 'call'].forEach((type) => {
-      const key = [address, definition.name, type].join('.');
-      const method = type === 'call' ? contract[definition.name].call : contract[definition.name];
-      api[definition.name][type] = (...args) => {
-        return getWeb3Method({ key, method, args, actionNames: actions });
-      };
+export function createTransaction({ args, method, address }) {
+  return (dispatch) => {
+    return new Promise((resolve, reject) => {
+      const id = uuid();
+      dispatch({ type: actions.UPDATED_TRANSACTION, id, address });
+      // pass to transaction creator
+      return txActions.createTransaction({ args, method })(dispatch)
+      .then((txHash) => {
+        dispatch({ type: actions.UPDATED_TRANSACTION, id, address, payload: { txHash } });
+        resolve(id);
+      })
+      .catch((error) => {
+        dispatch({ type: actions.UPDATED_TRANSACTION, id, address, payload: { error } });
+        reject(error);
+      });
     });
-  });
-  return api;
+  };
 }
+
+// TODO deploy action?
