@@ -1,9 +1,14 @@
 import assert from 'assert';
+import { createStore, applyMiddleware } from 'redux';
+import thunk from 'redux-thunk';
 import Web3 from 'web3';
-import store from '../src/reducers';
+
 import { reduxifyWeb3, reduxifyContract } from '../src/reduxifier';
+import reducer from '../src/reducer';
 
 import SimpleNameRegistry from './helpers/SimpleNameRegistry.sol';
+
+const store = createStore(reducer, applyMiddleware(thunk));
 
 const web3 = new Web3();
 const provider = new web3.providers.HttpProvider('http://localhost:8545');
@@ -21,7 +26,7 @@ describe('web3-redux', function () {
         const keys = key.split('.');
         return store.dispatch(web3Redux[keys[0]][keys[1]]())
         .then(() => {
-          const result = store.getState().getIn(['web3', keys[0], keys[1], '[]']);
+          const result = store.getState().getIn(['test', 'web3', keys[0], keys[1], '[]']);
           assert.ok(result.value);
           assert.ok(result.blockFetched);
         });
@@ -50,7 +55,7 @@ describe('web3-redux', function () {
     it('tx - adds the transaction hash to the store', function () {
       return store.dispatch(methods.register(regName, defaultAccount, { from: defaultAccount, gas: 3000000 }))
       .then((txId) => {
-        const tx = store.getState().getIn(['contracts', contract.address, 'transactions', txId]);
+        const tx = store.getState().getIn(['test', 'contracts', contract.address, 'transactions', txId]);
         assert.ok(tx.txHash);
         // save this for later test
         txHash = tx.txHash;
@@ -62,7 +67,7 @@ describe('web3-redux', function () {
       return store.dispatch(methods.names.call(regName, { from: defaultAccount }))
       .then(() => {
         const args = JSON.stringify([regName, { from: defaultAccount }]);
-        assert.equal(store.getState().getIn(['contracts', contract.address, 'calls', 'names', args]).value, defaultAccount);
+        assert.equal(store.getState().getIn(['test', 'contracts', contract.address, 'calls', 'names', args]).value, defaultAccount);
       });
     });
   });
@@ -71,11 +76,11 @@ describe('web3-redux', function () {
       return store.dispatch(web3Redux.eth.getTransaction(txHash))
       .then((res) => {
         assert.ok(res.blockHash);
-        assert.equal(store.getState().getIn(['transactions', txHash]).value.blockHash, res.blockHash);
+        assert.equal(store.getState().getIn(['test', 'transactions', txHash]).value.blockHash, res.blockHash);
         return store.dispatch(web3Redux.eth.getTransactionReceipt(txHash));
       }).then((res) => {
         assert.ok(res.transactionHash);
-        assert.equal(store.getState().getIn(['transactions', txHash]).value.transactionHash, res.transactionHash);
+        assert.equal(store.getState().getIn(['test', 'transactions', txHash]).value.transactionHash, res.transactionHash);
       });
     });
     it('uses transaction store with eth.sendTransaction', function () {
@@ -84,15 +89,15 @@ describe('web3-redux', function () {
       .then((hash) => {
         newHash = hash;
         assert.ok(newHash);
-        assert.ok(store.getState().getIn(['transactions', newHash]).created);
+        assert.ok(store.getState().getIn(['test', 'transactions', newHash]).created);
         return store.dispatch(web3Redux.eth.getTransaction(newHash));
       }).then((res) => {
         assert.ok(res.blockHash);
-        assert.equal(store.getState().getIn(['transactions', newHash]).value.blockHash, res.blockHash);
+        assert.equal(store.getState().getIn(['test', 'transactions', newHash]).value.blockHash, res.blockHash);
         return store.dispatch(web3Redux.eth.getTransactionReceipt(newHash));
       }).then((res) => {
         assert.ok(res.transactionHash);
-        assert.equal(store.getState().getIn(['transactions', newHash]).value.transactionHash, res.transactionHash);
+        assert.equal(store.getState().getIn(['test', 'transactions', newHash]).value.transactionHash, res.transactionHash);
       });
     });
   });

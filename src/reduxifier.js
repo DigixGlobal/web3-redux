@@ -1,6 +1,5 @@
 import WEB3_API from './web3Api';
-import * as web3Actions from './actions/web3';
-import * as contractActions from './actions/contracts';
+import { getWeb3Method, createContractTransaction } from './actions';
 
 export function reduxifyWeb3({ web3 }) {
   const api = {};
@@ -10,10 +9,10 @@ export function reduxifyWeb3({ web3 }) {
     const methodKey = keys[1];
     if (!api[groupKey]) { api[groupKey] = {}; }
     const method = web3[groupKey][methodKey];
-    const actionNames = WEB3_API[key].actions || web3Actions.actions;
-    const actionCreator = WEB3_API[key].actionCreator || web3Actions.getWeb3Method;
+    const collection = WEB3_API[key].collection || 'web3';
+    const actionCreator = WEB3_API[key].actionCreator || getWeb3Method;
     api[groupKey][methodKey] = (...args) => {
-      return actionCreator({ key, method, args, actionNames });
+      return actionCreator({ collection, key, method, args });
     };
   });
   return api;
@@ -33,13 +32,13 @@ export function reduxifyContract({ abi, address, web3 }) {
 
     // hook up transactions
     api[definition.name] = (...args) => {
-      return contractActions.createTransaction({ args, address, method: contract[definition.name] });
+      return createContractTransaction({ args, address, method: contract[definition.name] });
     };
 
     // hook up calls
-    const callKey = [address, 'calls', definition.name].join('.');
+    const callKey = ['calls', definition.name].join('.');
     api[definition.name].call = (...args) => {
-      return web3Actions.getWeb3Method({ args, key: callKey, method: contract[definition.name].call, actionNames: contractActions.actions });
+      return getWeb3Method({ args, address, collection: 'contracts', key: callKey, method: contract[definition.name].call });
     };
   });
   return api;

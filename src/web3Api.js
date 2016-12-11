@@ -1,4 +1,4 @@
-import * as transactionActions from './actions/transactions';
+import { createTransaction, getTransaction } from './actions';
 export default {
   'net.getListening': {},
   'net.getPeerCount': {},
@@ -20,15 +20,21 @@ export default {
   'eth.getBlock': {},
   'eth.getBlockTransactionCount': {},
   'eth.getUncle': {},
-  'eth.getTransaction': { actions: transactionActions.actions },
   'eth.getTransactionFromBlock': {},
-  'eth.getTransactionReceipt': { actions: transactionActions.actions },
+  'eth.getTransaction': {
+    collection: 'transactions',
+    actionCreator: getTransaction,
+  },
+  'eth.getTransactionReceipt': {
+    collection: 'transactions',
+    actionCreator: getTransaction,
+  },
   'eth.sendTransaction': {
-    actions: transactionActions.actions,
-    actionCreator: transactionActions.createTransaction,
+    collection: 'transactions',
+    actionCreator: createTransaction,
   },
   'eth.sendRawTransaction': {
-    actions: transactionActions.actions,
-    actionCreator: transactionActions.createTransaction,
+    collection: 'transactions',
+    actionCreator: createTransaction,
   },
 };
