@@ -1,6 +1,6 @@
 import uuid from 'uuid';
 
-const NAMESPACE = 'WEB_REDUX';
+const NAMESPACE = 'WEB3_REDUX';
 
 export const actions = {
   TRANSACTION_CREATED: `${NAMESPACE} created transaction`,
@@ -10,50 +10,50 @@ export const actions = {
   WEB3_GET_FAILED: `${NAMESPACE} failed to get web3 method`,
 };
 
-export function getWeb3Method({ method, key, args = [], collection, address, txHash }) {
+export function getWeb3Method({ method, args = [], ...params }) {
   return (dispatch) => {
     return new Promise((resolve, reject) => {
-      dispatch({ type: actions.WEB3_GET, key, args, collection, address, txHash });
+      dispatch({ type: actions.WEB3_GET, args, ...params });
       method.apply(null, args.concat([(err, res) => {
         if (err) {
-          dispatch({ type: actions.WEB3_GET_FAILED, key, args, error: err, collection, address, txHash });
+          dispatch({ type: actions.WEB3_GET_FAILED, args, error: err, ...params });
           return reject(err);
         }
-        dispatch({ type: actions.WEB3_GOT, key, args, value: res, collection, address, txHash });
+        dispatch({ type: actions.WEB3_GOT, args, value: res, ...params });
         return resolve(res);
       }]));
     });
   };
 }
 
-export function getTransaction({ collection, key, method, args }) {
-  return getWeb3Method({ collection, key, method, args, txHash: args[0] });
+export function getTransaction({ args, ...params }) {
+  return getWeb3Method({ args, txHash: args[0], ...params });
 }
 
-export function createTransaction({ args, method }) {
+export function createTransaction({ args, method, networkId }) {
   return (dispatch) => {
     return new Promise((resolve, reject) => {
       method.apply(null, args.concat([(err, txHash) => {
         if (err) { return reject(err); }
-        dispatch({ collection: 'transactions', type: actions.TRANSACTION_CREATED, txHash, created: new Date() });
+        dispatch({ networkId, txHash, collection: 'transactions', type: actions.TRANSACTION_CREATED, created: new Date() });
         return resolve(txHash);
       }]));
     });
   };
 }
 
-export function createContractTransaction({ args, method, address }) {
+export function createContractTransaction({ args, method, address, networkId }) {
   return (dispatch) => {
     return new Promise((resolve, reject) => {
       const id = uuid();
-      dispatch({ collection: 'contracts', type: actions.CONTRACT_UPDATED_TRANSACTION, id, address, payload: {} });
-      return createTransaction({ args, method })(dispatch)
+      dispatch({ collection: 'contracts', type: actions.CONTRACT_UPDATED_TRANSACTION, id, networkId, address, payload: {} });
+      return createTransaction({ args, method, networkId })(dispatch)
       .then((txHash) => {
-        dispatch({ collection: 'contracts', type: actions.CONTRACT_UPDATED_TRANSACTION, id, address, payload: { txHash } });
+        dispatch({ collection: 'contracts', type: actions.CONTRACT_UPDATED_TRANSACTION, id, networkId, address, payload: { txHash } });
         resolve(id);
       })
       .catch((error) => {
-        dispatch({ collection: 'contracts', type: actions.CONTRACT_UPDATED_TRANSACTION, id, address, payload: { error } });
+        dispatch({ collection: 'contracts', type: actions.CONTRACT_UPDATED_TRANSACTION, id, networkId, address, payload: { error } });
         reject(error);
       });
     });

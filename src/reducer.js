@@ -14,11 +14,11 @@ function argsKey(action) {
 function collectionKey(action, append = []) {
   switch (action.collection) {
     case 'web3':
-      return ['test', 'web3'].concat(argsKey(action)).concat(append);
+      return [action.networkId, 'web3'].concat(argsKey(action)).concat(append);
     case 'contracts':
-      return ['test', 'contracts', action.address].concat(argsKey(action)).concat(append);
+      return [action.networkId, 'contracts', action.address].concat(argsKey(action)).concat(append);
     case 'transactions':
-      return ['test', 'transactions', action.txHash].concat(append);
+      return [action.networkId, 'transactions', action.txHash].concat(append);
     default:
       return [].concat(append);
   }
