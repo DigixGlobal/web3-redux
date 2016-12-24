@@ -50,7 +50,7 @@ export function createContractTransaction({ args, method, address, networkId }) 
       return createTransaction({ args, method, networkId })(dispatch)
       .then((txHash) => {
         dispatch({ collection: 'contracts', type: actions.CONTRACT_UPDATED_TRANSACTION, id, networkId, address, payload: { txHash } });
-        resolve(id);
+        resolve(txHash);
       })
       .catch((error) => {
         dispatch({ collection: 'contracts', type: actions.CONTRACT_UPDATED_TRANSACTION, id, networkId, address, payload: { error } });

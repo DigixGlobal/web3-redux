@@ -1,8 +1,27 @@
 import merge from 'deepmerge';
 import { bindActionCreators } from 'redux';
-import { reduxifyWeb3 } from './reduxifier';
 
-function generateAPI({ network, getStore, dispatch, web3 }) {
+import WEB3_API from './web3Api';
+import { getWeb3Method } from './actions';
+
+function reduxifyWeb3({ web3, networkId }) {
+  const api = {};
+  Object.keys(WEB3_API).forEach((key) => {
+    const keys = key.split('.');
+    const groupKey = keys[0];
+    const methodKey = keys[1];
+    if (!api[groupKey]) { api[groupKey] = {}; }
+    const method = web3[groupKey][methodKey];
+    const collection = WEB3_API[key].collection || 'web3';
+    const actionCreator = WEB3_API[key].actionCreator || getWeb3Method;
+    api[groupKey][methodKey] = (...args) => {
+      return actionCreator({ collection, key, method, args, networkId });
+    };
+  });
+  return api;
+}
+
+function generateAPI({ network, getStore, getDispatch, web3 }) {
   const networkId = network.id;
   if (!web3) { return null; }
   const web3Redux = reduxifyWeb3({ networkId, web3 });
@@ -21,7 +40,7 @@ function generateAPI({ network, getStore, dispatch, web3 }) {
     }), {})
   ,
     Object.keys(web3Redux).reduce((o, k) => ({
-      ...o, [k]: bindActionCreators(web3Redux[k], (...args) => dispatch(...args)),
+      ...o, [k]: bindActionCreators(web3Redux[k], getDispatch()),
     }), {})
   );
   return { ...api, __web3: web3 };
@@ -45,7 +64,7 @@ export default function ({ connect, getWeb3s }) {
   }
 
   function mergeProps(stateProps, dispatchProps, ownProps) {
-    return { ...ownProps, ...stateProps, web3: getWeb3s({ getStore: () => store, dispatch, generateAPI }) };
+    return { ...ownProps, ...stateProps, web3: getWeb3s({ getStore: () => store, getDispatch: () => dispatch, generateAPI }) };
   }
   return connect(mapStateToProps, mapDispatchToProps, mergeProps);
 }
