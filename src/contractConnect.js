@@ -1,7 +1,8 @@
 import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
 import { getWeb3Method, createContractTransaction } from './actions';
 
-const cached = {}
+const cached = {};
 
 function reduxifyContract({ abi, address, web3, networkId, getStore }) {
   if (!address) { throw new Error('Address not defined'); }
@@ -50,7 +51,7 @@ function generateContractAPI({ abi, address, networkId, getStore, getDispatch, w
   return { ...api, __web3: web3.__web3 || web3 };
 }
 
-export default function ({ connect, getContracts }) {
+export default function ({ getContracts }) {
   // use store/dispatch pointer and cache reducer in this namespace for perf & getter syntax
   let store;
   let dispatch;

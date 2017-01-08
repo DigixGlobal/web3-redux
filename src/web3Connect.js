@@ -4,6 +4,8 @@ import { bindActionCreators } from 'redux';
 import WEB3_API from './web3Api';
 import { getWeb3Method } from './actions';
 
+import { connect } from 'react-redux';
+
 function reduxifyWeb3({ web3, networkId }) {
   const api = {};
   Object.keys(WEB3_API).forEach((key) => {
@@ -50,7 +52,7 @@ function generateAPI({ network, getStore, getDispatch, web3 }) {
   return { ...api, __web3: web3 };
 }
 
-export default function ({ connect, getWeb3s }) {
+export default function ({ getWeb3s }) {
   // use store/dispatch pointer and cache reducer in this namespace for perf & getter syntax
   let store;
   let dispatch;
@@ -70,5 +72,6 @@ export default function ({ connect, getWeb3s }) {
   function mergeProps(stateProps, dispatchProps, ownProps) {
     return { ...ownProps, ...stateProps, web3: getWeb3s({ getStore: () => store, getDispatch: () => dispatch, generateAPI }) };
   }
+
   return connect(mapStateToProps, mapDispatchToProps, mergeProps);
 }
