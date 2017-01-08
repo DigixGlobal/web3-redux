@@ -1,10 +1,14 @@
+/* eslint-disable no-underscore-dangle */
+
+// TODO figure out caching
+
 import merge from 'deepmerge';
 import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
 
 import WEB3_API from './web3Api';
-import { getWeb3Method } from './actions';
+import { getWeb3Method, createContractTransaction } from './actions';
 
-import { connect } from 'react-redux';
 
 function reduxifyWeb3({ web3, networkId }) {
   const api = {};
@@ -23,7 +27,54 @@ function reduxifyWeb3({ web3, networkId }) {
   return api;
 }
 
-function generateAPI({ network, getStore, getDispatch, web3 }) {
+function reduxifyContract({ abi, address, web3, networkId, getStore }) {
+  if (!address) { throw new Error('Address not defined'); }
+  const contractInstance = (web3.__web3 || web3).eth.contract(abi).at(address);
+  const api = {};
+  // TODO optimize/cache?
+  abi.forEach((definition) => {
+    if (definition.type !== 'function') { return; }
+    api[definition.name] = {};
+
+    // standard getter
+    api[definition.name] = (...args) => {
+      return (getStore().getIn(['web3Redux', networkId, 'contracts', address, 'calls', definition.name, JSON.stringify(args)]) || {}).value;
+    };
+    // hook up transactions
+    api[definition.name].transaction = (...args) => {
+      return createContractTransaction({ networkId, args, address, method: contractInstance[definition.name] });
+    };
+    // hook up calls
+    const callKey = ['calls', definition.name].join('.');
+    api[definition.name].call = (...args) => {
+      return getWeb3Method({ networkId, args, address, collection: 'contracts', key: callKey, method: contractInstance[definition.name].call });
+    };
+  });
+  return api;
+}
+
+const cachedContracts = {};
+
+function generateContractAPI({ abi, address, networkId, getStore, getDispatch, web3 }) {
+  if (!web3) { return null; }
+  // TODO use provider url, too (hint, yes.)?
+  const cacheKey = `${networkId}${address}`;
+  if (cachedContracts[cacheKey]) { return cachedContracts[cacheKey]; }
+  const contractRedux = reduxifyContract({ abi, address, web3, networkId, getStore });
+  // bind action creators for `call` and `transaction`
+  const api = Object.keys(contractRedux).reduce((o, k) => {
+    const { transaction, call } = contractRedux[k];
+    const actions = bindActionCreators({ transaction, call }, getDispatch());
+    const wrappedMethod = contractRedux[k];
+    wrappedMethod.transaction = actions.transaction;
+    wrappedMethod.call = actions.call;
+    return { ...o, [k]: wrappedMethod };
+  }, {});
+  cachedContracts[cacheKey] = api;
+  return { ...api, __web3: web3.__web3 || web3 };
+}
+
+function generateWeb3API({ network, getStore, getDispatch, web3 }) {
   const networkId = network.id;
   if (!web3) { return null; }
   const web3Redux = reduxifyWeb3({ networkId, web3 });
@@ -49,10 +100,27 @@ function generateAPI({ network, getStore, getDispatch, web3 }) {
       ...o, [k]: bindActionCreators(web3Redux[k], getDispatch()),
     }), {})
   );
-  return { ...api, __web3: web3 };
+
+  const contract = (abi) => {
+    return {
+      at: (address) => generateContractAPI({ abi, address, networkId, getStore, getDispatch, web3 }),
+      new: () => {
+        // TODO deploy new instance...
+      },
+    };
+  };
+
+  return {
+    ...api,
+    __web3: web3,
+    eth: {
+      ...api.eth,
+      contract,
+    },
+  };
 }
 
-export default function ({ getWeb3s }) {
+export default function (getWeb3s) {
   // use store/dispatch pointer and cache reducer in this namespace for perf & getter syntax
   let store;
   let dispatch;
@@ -70,7 +138,7 @@ export default function ({ getWeb3s }) {
   }
 
   function mergeProps(stateProps, dispatchProps, ownProps) {
-    return { ...ownProps, ...stateProps, web3: getWeb3s({ getStore: () => store, getDispatch: () => dispatch, generateAPI }) };
+    return { ...ownProps, ...stateProps, web3s: getWeb3s({ getStore: () => store, getDispatch: () => dispatch, generateWeb3API }) };
   }
 
   return connect(mapStateToProps, mapDispatchToProps, mergeProps);
