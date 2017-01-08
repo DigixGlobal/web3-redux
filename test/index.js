@@ -55,8 +55,8 @@ describe('web3-redux', function () {
     // TODO test errors
     it('tx - adds the transaction hash to the store', function () {
       return store.dispatch(methods.register(regName, defaultAccount, { from: defaultAccount, gas: 3000000 }))
-      .then((txId) => {
-        const tx = store.getState().getIn([networkId, 'contracts', contract.address, 'transactions', txId]);
+      .then((txhash) => {
+        const tx = store.getState().getIn([networkId, 'contracts', contract.address, 'transactions', txhash]);
         assert.ok(tx.txHash);
         txHash = tx.txHash;
         return new Promise(resolve => setTimeout(resolve, 10)); // wait for it to be mined
