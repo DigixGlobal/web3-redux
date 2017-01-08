@@ -33,7 +33,11 @@ function generateAPI({ network, getStore, getDispatch, web3 }) {
         const getterKey = `${getterMethod[0].toLowerCase()}${getterMethod.slice(1)}`;
         const getterFn = (...args) => {
           const gotStore = getStore();
-          return gotStore && (gotStore.getIn(['web3Redux', networkId, 'web3', k, k2, JSON.stringify(args)]) || {}).value;
+          if (!gotStore) { return null; }
+          if (getterKey === 'transaction') {
+            return (gotStore.getIn(['web3Redux', networkId, 'transactions', args[0]]) || {}).value;
+          }
+          return (gotStore.getIn(['web3Redux', networkId, 'web3', k, k2, JSON.stringify(args)]) || {}).value;
         };
         return { ...o2, [getterKey]: getterFn };
       }, {}),
