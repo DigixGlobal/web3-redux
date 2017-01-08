@@ -14,11 +14,11 @@ function argsKey(action) {
 function collectionKey(action, append = []) {
   switch (action.collection) {
     case 'web3':
-      return [action.networkId, 'web3'].concat(argsKey(action)).concat(append);
+      return ['networks', action.networkId, 'web3'].concat(argsKey(action)).concat(append);
     case 'contracts':
-      return [action.networkId, 'contracts', action.address].concat(argsKey(action)).concat(append);
+      return ['networks', action.networkId, 'contracts', action.address].concat(argsKey(action)).concat(append);
     case 'transactions':
-      return [action.networkId, 'transactions', action.txHash].concat(append);
+      return ['networks', action.networkId, 'transactions', action.txHash].concat(append);
     default:
       return [].concat(append);
   }
@@ -38,17 +38,10 @@ export default function (state = fromJS({}), action) {
       return setCollection(state, action, ['transactions', action.id], action.payload);
     case actions.TRANSACTION_CREATED:
       return setCollection(state, action, { created: action.created });
-    case actions.WEB3_GET:
-      return updateCollection(state, action, o => ({
-        ...o,
-        fetching: true,
-      }));
-    case actions.WEB3_GET_FAILED:
-      return updateCollection(state, action, o => ({
-        ...o,
-        error: action.error,
-        fetching: false,
-      }));
+    case actions.PENDING:
+      return state.updateIn(['status'], (o) => ({ ...o, pending: true }));
+    case actions.NOT_PENDING:
+      return state.updateIn(['status'], (o) => ({ ...o, pending: false }));
     case actions.WEB3_GOT:
       return updateCollection(state, action, o => ({
         ...o,

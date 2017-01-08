@@ -8,6 +8,8 @@ export const actions = {
   WEB3_GET: `${NAMESPACE} getting web3 method`,
   WEB3_GOT: `${NAMESPACE} got web3 method`,
   WEB3_GET_FAILED: `${NAMESPACE} failed to get web3 method`,
+  PENDING: `${NAMESPACE} pending`,
+  NOT_PENDING: `${NAMESPACE} not pending`,
 };
 
 export function getWeb3Method({ method, args = [], ...params }) {

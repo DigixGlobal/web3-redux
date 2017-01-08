@@ -9,7 +9,6 @@ import { connect } from 'react-redux';
 import WEB3_API from './web3Api';
 import { getWeb3Method, createContractTransaction } from './actions';
 
-
 function reduxifyWeb3({ web3, networkId }) {
   const api = {};
   Object.keys(WEB3_API).forEach((key) => {
@@ -38,7 +37,7 @@ function reduxifyContract({ abi, address, web3, networkId, getStore }) {
 
     // standard getter
     api[definition.name] = (...args) => {
-      return (getStore().getIn(['web3Redux', networkId, 'contracts', address, 'calls', definition.name, JSON.stringify(args)]) || {}).value;
+      return (getStore().getIn(['web3Redux', 'networks', networkId, 'contracts', address, 'calls', definition.name, JSON.stringify(args)]) || {}).value;
     };
     // hook up transactions
     api[definition.name].transaction = (...args) => {
@@ -88,9 +87,9 @@ function generateWeb3API({ network, getStore, getDispatch, web3 }) {
           const gotStore = getStore();
           if (!gotStore) { return null; }
           if (getterKey === 'transaction') {
-            return (gotStore.getIn(['web3Redux', networkId, 'transactions', args[0]]) || {}).value;
+            return (gotStore.getIn(['web3Redux', 'networks', networkId, 'transactions', args[0]]) || {}).value;
           }
-          return (gotStore.getIn(['web3Redux', networkId, 'web3', k, k2, JSON.stringify(args)]) || {}).value;
+          return (gotStore.getIn(['web3Redux', 'networks', networkId, 'web3', k, k2, JSON.stringify(args)]) || {}).value;
         };
         return { ...o2, [getterKey]: getterFn };
       }, {}),
@@ -105,7 +104,7 @@ function generateWeb3API({ network, getStore, getDispatch, web3 }) {
     return {
       at: (address) => generateContractAPI({ abi, address, networkId, getStore, getDispatch, web3 }),
       new: () => {
-        // TODO deploy new instance...
+        // TODO deploy new contract instance...
       },
     };
   };
@@ -138,7 +137,12 @@ export default function (getWeb3s) {
   }
 
   function mergeProps(stateProps, dispatchProps, ownProps) {
-    return { ...ownProps, ...stateProps, web3s: getWeb3s({ getStore: () => store, getDispatch: () => dispatch, generateWeb3API }) };
+    return {
+      ...ownProps,
+      ...stateProps,
+      web3s: getWeb3s({ getStore: () => store, getDispatch: () => dispatch, generateWeb3API }),
+      status: store.getIn(['web3Redux', 'status']) || {},
+    };
   }
 
   return connect(mapStateToProps, mapDispatchToProps, mergeProps);
