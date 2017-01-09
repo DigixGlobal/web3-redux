@@ -3,12 +3,11 @@
   "env": {
     "mocha": true
   },
+  "globals": {
+    "expect": true,
+  },
   "rules": {
-    "func-names": [0],
-    "prefer-arrow-callback": [0],
-    "arrow-body-style": [0],
-    "max-len": [0],
-    "new-cap": [0],
+    "react/prefer-stateless-function": [0],
   },
   "parserOptions": {
     "ecmaFeatures": {
