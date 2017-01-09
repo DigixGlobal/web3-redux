@@ -10,13 +10,13 @@ It allows for intuitive usage of web3 and contract methods in the react-redux en
 
 ### Usage
 
-Add to your react-redux project
+Add to your `react-redux` project
 
 ```bash
 npm install --save web3-redux;
 ```
 
-Hook up the reducer and middleware
+Hook it up with your store
 
 ```javascript
 // index.js
@@ -25,6 +25,7 @@ import { createStore, applyMiddleware } from 'redux';
 import { Provider } from 'react-redux';
 import thunk from 'redux-thunk';
 
+// middleware is optional, provides the `status` info
 import middleware from 'web3-redux/src/middleware';
 import reducer from 'web3-redux/src/reducer';
 
@@ -44,7 +45,7 @@ export default class App extends Component {
 }
 ```
 
-Use `web3Connect` top level of your app
+Use `web3Connect` once within your app
 
 ```javascript
 // components/app.js
@@ -55,10 +56,6 @@ import Balances from './balances';
 
 const tokenAbi = [ ... ];
 const tokenAddress = '0x123..000';
-
-const connectConfig = {
-  default: new Web3(Web3.providers.HttpProvider('http://localhost:6545')),
-};
 
 class App extends Component {
   render() {
@@ -79,6 +76,11 @@ class App extends Component {
 App.propTypes = {
   web3s: PropTypes.object.isRequired,
   status: PropTypes.object.isRequired,
+};
+
+const connectConfig = {
+  // key is the `networkId`
+  default: new Web3(Web3.providers.HttpProvider('http://localhost:6545')),
 };
 
 export default web3Connect(() => connectConfig)(App);
@@ -107,7 +109,7 @@ export default class Balances extends Component {
       <div>
         Eth Balance: {this.parseBalance(ethBalance)}
         <br />
-        Unicorn Balance: {this.parseBalance(tokenBalance)}
+        Token Balance: {this.parseBalance(tokenBalance)}
       </div>
     );
   }
@@ -120,14 +122,23 @@ Make transactions
 export default class Balances extends Component {
   // ...
   handleSubmit(e) {
+    // handle the form submit
     e.preventDefault();
+    // pluck the passed `props`
     const { account, decimals, tokenContract } = this.props;
+    // parse the token value
     const value = (this.state.value || 0) * Math.pow(10, decimals);
+    // a bit of validation
     if (!value) { return this.setState({ error: 'Enter value' }); }
+    // update the UI
     this.setState({ loading: true, error: false });
+    // make the transaction
     return tokenContract.transfer.transaction(this.state.to, value, { gas: 150000 }))
+    // return a promise
     .then((txHash) => {
+      // update the ui with the transaction info
       this.setState({ txHash, loading: false });
+    // TODO wait for the transaction to be mined
     }).catch((error) => {
       this.setState({ error: `${error}`, loading: false });
     });
@@ -148,14 +159,8 @@ The `web3Connect`ed component will receive the following props:
 
 Access `this.props.web3s.default.web3` or swap `default` for a key you passed in the `web3Connect` config.  Each network has a `web3` object with the following methods:
 
-* Contract Creator (promise)
-  * `eth.contract(abi)` returns reduxified contract instance (see below)
-    * `at(address)`
-    * `new(arg1, arg2, { from, gas })` *todo*
-* Transaction creators returns thunkified (promise) action creators
-  * `eth.sendTransaction`
-  * `eth.sendRawTransaction`
-* Data fetchers returns thunkified (promise) action creators
+Data fetchers returns thunkified promise action creators
+
   * `net.getListening()`
   * `net.getPeerCount()`
   * `version.getNode()`
@@ -179,7 +184,9 @@ Access `this.props.web3s.default.web3` or swap `default` for a key you passed in
   * `eth.getTransactionFromBlock()`
   * `eth.getTransaction()`
   * `eth.getTransactionReceipt()`
-* Value getters return latest value of resolved associated action
+
+Value getters return latest value of resolved associated action
+
   * `net.listening()`
   * `net.peerCount()`
   * `version.node()`
@@ -204,6 +211,22 @@ Access `this.props.web3s.default.web3` or swap `default` for a key you passed in
   * `eth.transaction()`
   * `eth.transactionReceipt()`
 
+Transaction Creators
+
+  * `eth.sendTransaction({ from, to, value, gas })`
+  * `eth.sendRawTransaction()`
+
+Contract Creator
+
+  * `eth.contract(abi)` define the contract using it's ABI
+    * `at(address)` returns reduxified contract instance linked to `address`
+    * `new(arg1, arg2, { from, gas })` *todo* deploys new instance and returns it
+  * `ContractInstance.methodName`
+    * `call(arg1, arg2, { from, gas })` thunkified action creator for fetching method `call` state
+    * `()` value of resolved `call` actions
+    * `transact(...args)` same as `call`, but creates a transaction
+
+
 ### Contract instances
 
 ```javascript
@@ -219,6 +242,7 @@ All ABI methods are converted with the following:
 ## TODO
 
 ```
-- More extensive API Docs
-- Tests
+- ctrl + f TODO
+- Nice example at start of docs
+- Jest Tests
 ```
