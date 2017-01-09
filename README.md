@@ -48,7 +48,7 @@ import web3Connect from 'redux-web3/web3Connect';
 import Balances from './balances';
 
 const tokenAbi = [ ... ];
-const unicornAddress = '0x123..000';
+const tokenAddress = '0x123..000';
 
 const connectConfig = {
   default: new Web3(Web3.providers.HttpProvider('http://localhost:6545')),
@@ -63,7 +63,7 @@ class App extends Component {
         {status.pending && <div>Loading...</div>}
         <Balances
           web3={web3}
-          unicornContract={web3.contract(tokenAbi).at(unicornAddress)}
+          tokenContract={web3.contract(tokenAbi).at(tokenAddress)}
         />
       </div>
     );
@@ -88,20 +88,20 @@ export default class Balances extends Component {
   componentDidMount() {
     // triggers action creators
     this.props.web3.eth.getBalance(address);
-    this.props.unicornContract.balanceOf.call(address);
+    this.props.tokenContract.balanceOf.call(address);
   }
   parseBalance(balance) {
     return balance ? balance.toNumber() / 1e18 : '?';
   }
   render() {
-    const { web3, unicornContract } = this.props;
+    const { web3, tokenContract } = this.props;
     const ethBalance = web3.eth.balance(address);
-    const unicornBalance = unicornContract.balanceOf(address);
+    const tokenBalance = tokenContract.balanceOf(address);
     return (
       <div>
         Eth Balance: {this.parseBalance(ethBalance)}
         <br />
-        Unicorn Balance: {this.parseBalance(unicornBalance)}
+        Unicorn Balance: {this.parseBalance(tokenBalance)}
       </div>
     );
   }
@@ -115,12 +115,11 @@ export default class Balances extends Component {
   // ...
   handleSubmit(e) {
     e.preventDefault();
-    const { web3, account } = this.props;
-    const value = (this.state.value || 0) * 1e18;
+    const { account, decimals, tokenContract } = this.props;
+    const value = (this.state.value || 0) * Math.pow(10, decimals);
     if (!value) { return this.setState({ error: 'Enter value' }); }
-    this.setState({ loading: true, error: false, txHash: null });
-    return new Promise(resolve => setTimeout(resolve, 10)) // UI update
-    .then(() => web3.eth.sendTransaction({ value, from: account.address, to: this.state.to }))
+    this.setState({ loading: true, error: false });
+    return tokenContract.transfer.transaction(this.state.to, value, { gas: 150000 }))
     .then((txHash) => {
       this.setState({ txHash, loading: false });
     }).catch((error) => {
