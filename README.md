@@ -2,6 +2,12 @@
 
 ## Work in Progress
 
+### Redixified Web3
+
+`web3-redux` is a complete API wrapper for web3 that provides seamless integration into react-redux projects.
+
+It allows for intuitive usage of web3 and contract methods in the react-redux environment, and exposes a redux's middleware system for powerful state-tracking and caching options.
+
 ### Usage
 
 Add to your react-redux project
@@ -108,7 +114,7 @@ export default class Balances extends Component {
 }
 ```
 
-Make transactions:
+Make transactions
 
 ```javascript
 export default class Balances extends Component {
@@ -129,6 +135,86 @@ export default class Balances extends Component {
   // ...
 }
 ```
+
+## API
+
+The `web3Connect`ed component will receive the following props:
+
+### `status` object containing connectivity status
+
+`pending` XHR requests pending *boolean*
+
+### `web3s` object containing namespaced reduxified providers
+
+Access `this.props.web3s.default.web3`. Each `web3` has the following methods:
+
+* Contract Creator (promise)
+  * `eth.contract(abi)` returns reduxified contract instance (see below)
+    * `at(address)`
+    * `new(arg1, arg2, { from, gas })` *todo*
+* Transaction creators returns thunkified (promise) action creators
+  * `eth.sendTransaction`
+  * `eth.sendRawTransaction`
+* Data fetchers returns thunkified (promise) action creators
+  * `net.getListening()`
+  * `net.getPeerCount()`
+  * `version.getNode()`
+  * `version.getNetwork()`
+  * `version.getEthereum()`
+  * `version.getWhisper()`
+  * `eth.getBalance()`
+  * `eth.getCode()`
+  * `eth.getTransactionCount()`
+  * `eth.getStorageAt()`
+  * `eth.getSyncing()`
+  * `eth.getCoinbase()`
+  * `eth.getMining()`
+  * `eth.getHashrate()`
+  * `eth.getGasPrice()`
+  * `eth.getAccounts()`
+  * `eth.getBlockNumber()`
+  * `eth.getBlock()`
+  * `eth.getBlockTransactionCount()`
+  * `eth.getUncle()`
+  * `eth.getTransactionFromBlock()`
+  * `eth.getTransaction()`
+  * `eth.getTransactionReceipt()`
+* Value getters return latest value of resolved associated action
+  * `net.listening()`
+  * `net.peerCount()`
+  * `version.node()`
+  * `version.network()`
+  * `version.ethereum()`
+  * `version.whisper()`
+  * `eth.balance()`
+  * `eth.code()`
+  * `eth.transactionCount()`
+  * `eth.storageAt()`
+  * `eth.syncing()`
+  * `eth.coinbase()`
+  * `eth.mining()`
+  * `eth.hashrate()`
+  * `eth.gasPrice()`
+  * `eth.accounts()`
+  * `eth.blockNumber()`
+  * `eth.block()`
+  * `eth.blockTransactionCount()`
+  * `eth.uncle()`
+  * `eth.transactionFromBlock()`
+  * `eth.transaction()`
+  * `eth.transactionReceipt()`
+
+### Contract instances
+
+```javascript
+const MyContract = this.props.web3s.default.web3.contract(abi).at(address);
+```
+
+All ABI methods are converted with the following:
+
+* `methodName.transaction(arg1, arg2)` thunkified (promise) transacting action creator
+* `methodName.call(arg1, arg2)` thunkified (promise) data-fetching action creator
+* `methodName(arg1, arg2)` returns latest resolved `call` value
 
 ## TODO
 
