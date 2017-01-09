@@ -146,7 +146,7 @@ The `web3Connect`ed component will receive the following props:
 
 ### `web3s` object containing namespaced reduxified providers
 
-Access `this.props.web3s.default.web3`. Each `web3` has the following methods:
+Access `this.props.web3s.default.web3` or swap `default` for a key you passed in the `web3Connect` config.  Each network has a `web3` object with the following methods:
 
 * Contract Creator (promise)
   * `eth.contract(abi)` returns reduxified contract instance (see below)
