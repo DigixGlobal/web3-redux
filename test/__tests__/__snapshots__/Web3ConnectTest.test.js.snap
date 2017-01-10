@@ -1,5 +1,10 @@
 exports[`test renders correctly 1`] = `
 <div>
-  {\"props\":[\"test\",\"web3ReduxStore\",\"web3s\",\"status\"]}
+  <div>
+    {\"props\":[\"testProp\",\"web3ReduxStore\",\"web3s\",\"status\"]}
+  </div>
+  <div>
+    EthereumJS TestRPC/v3.0.3/ethereum-js
+  </div>
 </div>
 `;

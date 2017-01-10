@@ -2,9 +2,13 @@ import React from 'react';
 import TestProvider from '../TestProvider';
 import renderer from 'react-test-renderer';
 
-it('renders correctly', () => {
-  const tree = renderer.create(<TestProvider test />).toJSON();
-  expect(tree).toMatchSnapshot();
+it('renders correctly', (done) => {
+  const instance = renderer.create(<TestProvider testProp />);
+  // timeout to allow web3 to set itself up...
+  setTimeout(() => {
+    expect(instance.toJSON()).toMatchSnapshot();
+    done();
+  }, 20);
 });
 
 // it('deploys the contract', () => {
