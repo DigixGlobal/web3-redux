@@ -100,6 +100,24 @@ function generateWeb3API({ network, getStore, getDispatch, web3 }) {
     }), {})
   );
 
+  api.eth.waitForMined = (tx, pollTime = 10 * 1000) => {
+    // TODO poll for getTransactionReceipt, then resolve
+    return new Promise((resolve, reject) => {
+      function poll() {
+        return api.eth.getTransactionReceipt(tx).then((res) => {
+          if (res) {
+            // got the transaction receipt
+            resolve(res);
+          } else {
+            // no dice, try agian
+            setTimeout(poll, pollTime);
+          }
+        }).catch(reject);
+      }
+      poll();
+    });
+  };
+
   const contract = (abi) => {
     return {
       at: (address) => generateContractAPI({ abi, address, networkId, getStore, getDispatch, web3 }),
