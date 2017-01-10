@@ -119,10 +119,27 @@ function generateWeb3API({ network, getStore, getDispatch, web3 }) {
   };
 }
 
-export default function (getWeb3s) {
+export default function (arg) {
+  // const web3s;
   // use store/dispatch pointer and cache reducer in this namespace for perf & getter syntax
   let store;
   let dispatch;
+  let resolvedWeb3;
+  function getStore() { return store; }
+  function getDispatch() { return dispatch; }
+
+  function resolveWeb3() {
+    if (resolvedWeb3) {
+      return resolvedWeb3;
+    }
+    if (typeof arg === 'function') {
+      return arg({ getStore, getDispatch, generateWeb3API });
+    }
+    resolvedWeb3 = (typeof arg !== 'function') && Object.keys(arg).reduce((o, k) => ({
+      ...o, [k]: generateWeb3API({ network: { id: k }, web3: arg[k], getStore, getDispatch }),
+    }), {});
+    return resolvedWeb3;
+  }
 
   function mapStateToProps(newStore) {
     store = newStore;
@@ -140,7 +157,7 @@ export default function (getWeb3s) {
     return {
       ...ownProps,
       ...stateProps,
-      web3s: getWeb3s({ getStore: () => store, getDispatch: () => dispatch, generateWeb3API }),
+      web3s: resolveWeb3(),
       status: store.getIn(['web3Redux', 'status']) || {},
     };
   }
