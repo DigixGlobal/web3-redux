@@ -3,11 +3,6 @@ import Web3 from 'web3';
 
 import web3Connect from '../src/web3Connect';
 
-// TODO use a stubbed provider-engine subprovider
-const connectConfig = {
-  default: new Web3(new Web3.providers.HttpProvider('http://localhost:6545')),
-};
-
 class Web3ConnectTest extends Component {
   constructor(props) {
     super(props);
@@ -38,4 +33,6 @@ Web3ConnectTest.propTypes = {
   status: PropTypes.object.isRequired,
 };
 
-export default web3Connect(connectConfig)(Web3ConnectTest);
+export default web3Connect({
+  default: new Web3(new Web3.providers.HttpProvider('http://localhost:6545')),
+})(Web3ConnectTest);

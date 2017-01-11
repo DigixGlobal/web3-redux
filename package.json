@@ -6,8 +6,8 @@
   "main": "src/index.js",
   "scripts": {
     "test": "jest --verbose",
-    "watch-test": "jest --verbose --watch",
-    "set-test": "rm -rf ./test/__tests__/__snapshots__; npm run test;"
+    "start": "jest --verbose --watch",
+    "test-server": "testrpc -p 6545 --seed 'plunge regular wage quit embody diesel search near sister approve toe shuffle'"
   },
   "dependencies": {
     "deepmerge": "^1.3.1",
