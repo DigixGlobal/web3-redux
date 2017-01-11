@@ -21,9 +21,9 @@ export default class ExampleTokenBalanceAndTransfer extends Component {
   getBalances() {
     // pluck the passed props contract and web3s
     const { contract, web3 } = this.props;
-    // web3-redux provides action promisified redux action creators:
+    // `web3-redux` provides promisified redux action creators:
     web3.eth.getBalance(accounts[0]);
-    // contract methods
+    // ... and contract methods
     contract.balanceOf.call(accounts[0]);
     contract.balanceOf.call(accounts[1]);
   }
@@ -33,7 +33,7 @@ export default class ExampleTokenBalanceAndTransfer extends Component {
     const tokens = prompt("How many tokens?");
     // ui: hide previous error
     this.setState({ error: false });
-    // create the contract transaction, returns a promisified 'thunk' action creator
+    // create the contract transaction, returns a promisified action creator
     contract.transfer.transaction(accounts[1], tokens, { from: accounts[0], gas: 150000 }))
     // pass returned `transactionHash` to the new `waitForMined` method
     .then(({ transactionHash }) => web3.eth.waitForMined(transactionHash))
@@ -47,7 +47,7 @@ export default class ExampleTokenBalanceAndTransfer extends Component {
     const { error } = this.state;
     return (
       <div>
-        {/* `balance` populated by result of latest `balanceOf` call */}
+        {/* `balance` populated by result of latest `web3.eth.getBalance` */}
         <div>Eth Balance: {web3.eth.balance(accounts[0])}</div>
         {/* contract methods populated by their equivalent `method.call()` */}
         <div>Balance 1: {contract.balanceOf(accounts[0)}</div>
@@ -182,7 +182,7 @@ export default class Balances extends Component {
     // handle the form submit
     e.preventDefault();
     // pluck the passed `props`
-    const { account, decimals, tokenContract } = this.props;
+    const { account, decimals, tokenContract, web3 } = this.props;
     // parse the token value
     const value = (this.state.value || 0) * Math.pow(10, decimals);
     // a bit of validation
@@ -192,10 +192,13 @@ export default class Balances extends Component {
     // make the transaction
     return tokenContract.transfer.transaction(this.state.to, value, { gas: 150000 }))
     // return a promise
-    .then((txHash) => {
+    .then(({ transactionHash }) => {
       // update the ui with the transaction info
-      this.setState({ txHash, loading: false });
-    // TODO wait for the transaction to be mined
+      this.setState({ transactionHash });
+      return web3.eth.waitForMined(transactionHash);
+    .then((tx) => {
+      // transaction is mined!
+      this.setState({ loading: false });
     }).catch((error) => {
       this.setState({ error: `${error}`, loading: false });
     });
@@ -277,7 +280,7 @@ Contract Creator
 
   * `eth.contract(abi)` define the contract using it's ABI
     * `at(address)` returns reduxified contract instance linked to `address`
-    * `new(arg1, arg2, { from, gas })` *todo* deploys new instance and returns it
+    * `new(arg1, arg2, { from, gas })` deploys new instance
   * `ContractInstance.methodName`
     * `call(arg1, arg2, { from, gas })` thunkified action creator for fetching method `call` state
     * `()` value of resolved `call` actions
@@ -300,6 +303,4 @@ All ABI methods are converted with the following:
 
 ```
 - ctrl + f TODO
-- Nice example at start of docs
-- Jest Tests
 ```
