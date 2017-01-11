@@ -1,3 +1,6 @@
+/* eslint-disable */
+// https://github.com/ConsenSys/example-truffle-library/blob/master/contracts/SimpleNameRegistry.sol
+
 var Web3 = require("web3");
 var SolidityEvent = require("web3/lib/web3/event.js");
 
