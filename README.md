@@ -4,7 +4,7 @@
 
 `web3-redux` is a wrapper library for web3 that provides seamless integration into react-redux projects. It allows for familiar usage of web3 and contract methods in the react-redux style, and exposes a redux's middleware system for powerful state-tracking and caching options.
 
-### Example Component
+## Example Component
 
 ```javascript
 export default class ExampleTokenBalanceAndTransfer extends Component {
@@ -14,12 +14,12 @@ export default class ExampleTokenBalanceAndTransfer extends Component {
     this.state = {};
     this.handleSend = this.handleSend.bind(this);
   }
-  // fetch the balances when component is shown
   componentDidMount() {
+    // fetch the balances when component is shown
     this.getBalances();
   }
   getBalances() {
-    // pluck the passed props contract and web3s
+    // pluck the passed props `contract` and `web3s`
     const { contract, web3 } = this.props;
     // `web3-redux` provides promisified redux action creators:
     web3.eth.getBalance(accounts[0]);
@@ -65,9 +65,74 @@ TokenBalance.propTypes = {
 };
 ```
 
-### Usage
+## API
 
-Add to your `react-redux` project
+The `web3Connect`ed component will receive the following props:
+
+### `status` object containing connectivity status
+
+`pending` *boolean* XHR requests pending
+
+### `web3s` object containing namespaced reduxified providers
+
+Access `this.props.web3s.default.web3` or swap `default` for a key you passed in the `web3Connect` config. Each network has a `web3` object with the following methods:
+
+|Fetch Data|Return Value|
+|---|---|
+|`net.getListening()`|`net.listening()`|
+|`net.getPeerCount()`|`net.peerCount()`|
+|`version.getNode()`|`version.node()`|
+|`version.getNetwork()`|`version.network()`|
+|`version.getEthereum()`|`version.ethereum()`|
+|`version.getWhisper()`|`version.whisper()`|
+|`eth.getBalance()`|`eth.balance()`|
+|`eth.getCode()`|`eth.code()`|
+|`eth.getTransactionCount()`|`eth.transactionCount()`|
+|`eth.getStorageAt()`|`eth.storageAt()`|
+|`eth.getSyncing()`|`eth.syncing()`|
+|`eth.getCoinbase()`|`eth.coinbase()`|
+|`eth.getMining()`|`eth.mining()`|
+|`eth.getHashrate()`|`eth.hashrate()`|
+|`eth.getGasPrice()`|`eth.gasPrice()`|
+|`eth.getAccounts()`|`eth.accounts()`|
+|`eth.getBlockNumber()`|`eth.blockNumber()`|
+|`eth.getBlock()`|`eth.block()`|
+|`eth.getBlockTransactionCount()`|`eth.blockTransactionCount()`|
+|`eth.getUncle()`|`eth.uncle()`|
+|`eth.getTransactionFromBlock()`|`eth.transactionFromBlock()`|
+|`eth.getTransaction()`|`eth.transaction()`|
+|`eth.getTransactionReceipt()`|`eth.transactionReceipt()`|
+
+Transaction Creators
+
+* `eth.sendTransaction({ from, to, value, gas })`
+* `eth.sendRawTransaction()`
+
+Helper methods
+
+* `eth.waitForMined(txHash)`
+
+Contract Creator
+
+* `eth.contract(abi)` define the contract using it's ABI
+  * `at(address)` returns reduxified contract api linked to `address`
+  * `new(arg1, arg2, { from, gas })` deploys new instance
+
+Contract Instances
+
+```javascript
+const MyContract = this.props.web3s.default.web3.eth.contract(abi).at(address);
+```
+
+All ABI methods are converted with the following:
+
+* `methodName.transaction(arg1, arg2)` promisified transaction action creator
+* `methodName.call(arg1, arg2)` promisified data-fetching action creator
+* `methodName(arg1, arg2)` returns latest resolved `call` value
+
+## Usage
+
+Add `web3-redux` to your `react-redux` project
 
 ```bash
 npm install --save web3-redux;
@@ -95,7 +160,7 @@ export default class App extends Component {
   render() {
     return (
       <Provider store={store}>
-        <App {...this.props} />
+        <App />
       </Provider>
     );
   }
@@ -117,7 +182,7 @@ const tokenAddress = '0x123..000';
 class App extends Component {
   render() {
     const { web3s, status } = this.props;
-    const web3 = web3s.default;
+    const { web3 } = web3s.default;
     return (
       <div>
         {status.pending && <div>Loading...</div>}
@@ -135,12 +200,11 @@ App.propTypes = {
   status: PropTypes.object.isRequired,
 };
 
-const connectConfig = {
+// web3Connect injects the magic.
+export default web3Connect({
   // key is the `networkId`
-  default: new Web3(Web3.providers.HttpProvider('http://localhost:6545')),
-};
-
-export default web3Connect(() => connectConfig)(App);
+  default: new Web3(Web3.providers.HttpProvider('http://localhost:6545'))
+})(App);
 ```
 
 Use the action creators and getters
@@ -176,131 +240,38 @@ export default class Balances extends Component {
 Make transactions
 
 ```javascript
-export default class Balances extends Component {
-  // ...
-  handleSubmit(e) {
-    // handle the form submit
-    e.preventDefault();
-    // pluck the passed `props`
-    const { account, decimals, tokenContract, web3 } = this.props;
-    // parse the token value
-    const value = (this.state.value || 0) * Math.pow(10, decimals);
-    // a bit of validation
-    if (!value) { return this.setState({ error: 'Enter value' }); }
-    // update the UI
-    this.setState({ loading: true, error: false });
-    // make the transaction
-    return tokenContract.transfer.transaction(this.state.to, value, { gas: 150000 }))
-    // return a promise
-    .then(({ transactionHash }) => {
-      // update the ui with the transaction info
-      this.setState({ transactionHash });
-      return web3.eth.waitForMined(transactionHash);
-    .then((tx) => {
-      // transaction is mined!
-      this.setState({ loading: false });
-    }).catch((error) => {
-      this.setState({ error: `${error}`, loading: false });
-    });
-  }
-  // ...
+handleSubmit(e) {
+  // handle the form submit
+  e.preventDefault();
+  // pluck the passed `props`
+  const { account, decimals, tokenContract, web3 } = this.props;
+  // parse the token value
+  const value = (this.state.value || 0) * Math.pow(10, decimals);
+  // a bit of validation
+  if (!value) { return this.setState({ error: 'Enter value' }); }
+  // update the UI
+  this.setState({ loading: true, error: false });
+  // make the transaction
+  return tokenContract.transfer.transaction(this.state.to, value, { gas: 150000 }))
+  // return a promise
+  .then(({ transactionHash }) => {
+    // update the ui with the transaction info
+    this.setState({ transactionHash });
+    return web3.eth.waitForMined(transactionHash);
+  .then((tx) => {
+    // transaction is mined!
+    this.setState({ loading: false });
+  }).catch((error) => {
+    this.setState({ error: `${error}`, loading: false });
+  });
 }
 ```
-
-## API
-
-The `web3Connect`ed component will receive the following props:
-
-### `status` object containing connectivity status
-
-`pending` XHR requests pending *boolean*
-
-### `web3s` object containing namespaced reduxified providers
-
-Access `this.props.web3s.default.web3` or swap `default` for a key you passed in the `web3Connect` config.  Each network has a `web3` object with the following methods:
-
-Data fetchers returns thunkified promise action creators
-
-  * `net.getListening()`
-  * `net.getPeerCount()`
-  * `version.getNode()`
-  * `version.getNetwork()`
-  * `version.getEthereum()`
-  * `version.getWhisper()`
-  * `eth.getBalance()`
-  * `eth.getCode()`
-  * `eth.getTransactionCount()`
-  * `eth.getStorageAt()`
-  * `eth.getSyncing()`
-  * `eth.getCoinbase()`
-  * `eth.getMining()`
-  * `eth.getHashrate()`
-  * `eth.getGasPrice()`
-  * `eth.getAccounts()`
-  * `eth.getBlockNumber()`
-  * `eth.getBlock()`
-  * `eth.getBlockTransactionCount()`
-  * `eth.getUncle()`
-  * `eth.getTransactionFromBlock()`
-  * `eth.getTransaction()`
-  * `eth.getTransactionReceipt()`
-
-Value getters return latest value of resolved associated action
-
-  * `net.listening()`
-  * `net.peerCount()`
-  * `version.node()`
-  * `version.network()`
-  * `version.ethereum()`
-  * `version.whisper()`
-  * `eth.balance()`
-  * `eth.code()`
-  * `eth.transactionCount()`
-  * `eth.storageAt()`
-  * `eth.syncing()`
-  * `eth.coinbase()`
-  * `eth.mining()`
-  * `eth.hashrate()`
-  * `eth.gasPrice()`
-  * `eth.accounts()`
-  * `eth.blockNumber()`
-  * `eth.block()`
-  * `eth.blockTransactionCount()`
-  * `eth.uncle()`
-  * `eth.transactionFromBlock()`
-  * `eth.transaction()`
-  * `eth.transactionReceipt()`
-
-Transaction Creators
-
-  * `eth.sendTransaction({ from, to, value, gas })`
-  * `eth.sendRawTransaction()`
-
-Contract Creator
-
-  * `eth.contract(abi)` define the contract using it's ABI
-    * `at(address)` returns reduxified contract instance linked to `address`
-    * `new(arg1, arg2, { from, gas })` deploys new instance
-  * `ContractInstance.methodName`
-    * `call(arg1, arg2, { from, gas })` thunkified action creator for fetching method `call` state
-    * `()` value of resolved `call` actions
-    * `transact(...args)` same as `call`, but creates a transaction
-
-
-### Contract instances
-
-```javascript
-const MyContract = this.props.web3s.default.web3.contract(abi).at(address);
-```
-
-All ABI methods are converted with the following:
-
-* `methodName.transaction(arg1, arg2)` thunkified (promise) transacting action creator
-* `methodName.call(arg1, arg2)` thunkified (promise) data-fetching action creator
-* `methodName(arg1, arg2)` returns latest resolved `call` value
 
 ## TODO
 
 ```
-- ctrl + f TODO
+- blockNumber middleware
+- rename `web3s` -> `networks`
+- web3Connect: refactor & figure out caching
+- test all methods
 ```
