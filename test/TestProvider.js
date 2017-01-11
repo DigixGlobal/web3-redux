@@ -17,7 +17,7 @@ export default class TestProvider extends Component {
   render() {
     return (
       <Provider store={store}>
-        <Web3ConnectTest {...this.props} />
+        <Web3ConnectTest />
       </Provider>
     );
   }

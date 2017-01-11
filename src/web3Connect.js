@@ -121,8 +121,10 @@ function generateWeb3API({ network, getStore, getDispatch, web3 }) {
   const contract = (abi) => {
     return {
       at: (address) => generateContractAPI({ abi, address, networkId, getStore, getDispatch, web3 }),
-      new: () => {
-        // TODO deploy new contract instance...
+      new: (...args) => {
+        const instance = web3.eth.contract(abi);
+        const data = instance.new.getData.apply(instance, args);
+        return api.eth.sendTransaction({ ...args, data }).then(tx => api.eth.waitForMined(tx));
       },
     };
   };

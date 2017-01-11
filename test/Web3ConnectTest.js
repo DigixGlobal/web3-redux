@@ -3,19 +3,31 @@ import Web3 from 'web3';
 
 import web3Connect from '../src/web3Connect';
 
+// TODO use a stubbed provider-engine subprovider
 const connectConfig = {
   default: new Web3(new Web3.providers.HttpProvider('http://localhost:6545')),
 };
 
 class Web3ConnectTest extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {};
+    this.handleTrigger = this.handleTrigger.bind(this);
+    this.setData = this.setData.bind(this);
+  }
   componentDidMount() {
     this.props.web3s.default.version.getNode();
   }
+  setData(data) {
+    this.setState({ data: JSON.stringify({ test: data }) });
+  }
+  handleTrigger(method) {
+    return method(this);
+  }
   render() {
     return (
-      <div>
-        <div>{JSON.stringify({ props: Object.keys(this.props) })}</div>
-        <div>{this.props.web3s.default.version.node()}</div>
+      <div triggerMethod={this.handleTrigger}>
+        {JSON.stringify(this.state.data)}
       </div>
     );
   }

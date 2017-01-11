@@ -1,10 +1,13 @@
-exports[`test renders correctly 1`] = `
-<div>
-  <div>
-    {\"props\":[\"testProp\",\"web3ReduxStore\",\"web3s\",\"status\"]}
-  </div>
-  <div>
-    EthereumJS TestRPC/v3.0.3/ethereum-js
-  </div>
+exports[`test gets the correct values 1`] = `
+<div
+  triggerMethod={[Function]}>
+  \"{\\\"test\\\":[\\\"EthereumJS TestRPC/v3.0.3/ethereum-js\\\",\\\"1484147314573\\\"]}\"
+</div>
+`;
+
+exports[`test initializes correctly 1`] = `
+<div
+  triggerMethod={[Function]}>
+  \"{\\\"test\\\":[[\\\"web3ReduxStore\\\",\\\"web3s\\\",\\\"status\\\"],[\\\"net\\\",\\\"version\\\",\\\"eth\\\",\\\"__web3\\\"],[\\\"balance\\\",\\\"code\\\",\\\"transactionCount\\\",\\\"storageAt\\\",\\\"syncing\\\",\\\"coinbase\\\",\\\"mining\\\",\\\"hashrate\\\",\\\"gasPrice\\\",\\\"accounts\\\",\\\"blockNumber\\\",\\\"block\\\",\\\"blockTransactionCount\\\",\\\"uncle\\\",\\\"transactionFromBlock\\\",\\\"transaction\\\",\\\"transactionReceipt\\\",\\\"getBalance\\\",\\\"getCode\\\",\\\"getTransactionCount\\\",\\\"getStorageAt\\\",\\\"getSyncing\\\",\\\"getCoinbase\\\",\\\"getMining\\\",\\\"getHashrate\\\",\\\"getGasPrice\\\",\\\"getAccounts\\\",\\\"getBlockNumber\\\",\\\"getBlock\\\",\\\"getBlockTransactionCount\\\",\\\"getUncle\\\",\\\"getTransactionFromBlock\\\",\\\"getTransaction\\\",\\\"getTransactionReceipt\\\",\\\"sendTransaction\\\",\\\"sendRawTransaction\\\",\\\"waitForMined\\\",\\\"contract\\\"],[\\\"node\\\",\\\"network\\\",\\\"ethereum\\\",\\\"whisper\\\",\\\"getNode\\\",\\\"getNetwork\\\",\\\"getEthereum\\\",\\\"getWhisper\\\"],[\\\"listening\\\",\\\"peerCount\\\",\\\"getListening\\\",\\\"getPeerCount\\\"]]}\"
 </div>
 `;
