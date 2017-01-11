@@ -30,7 +30,7 @@ it('initializes correctly', () => {
 });
 
 it('gets the correct web3 method values', (done) => {
-  // TODO add all values
+  // TODO test all values
   triggerMethod(({ props }) => {
     Promise.all([
       props.web3s.default.version.getNode(),

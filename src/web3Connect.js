@@ -1,7 +1,3 @@
-/* eslint-disable no-underscore-dangle */
-
-// TODO figure out caching
-
 import merge from 'deepmerge';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -9,74 +5,55 @@ import { connect } from 'react-redux';
 import WEB3_API from './web3Api';
 import { getWeb3Method, createContractTransaction } from './actions';
 
-function reduxifyWeb3({ web3, networkId }) {
-  const api = {};
-  Object.keys(WEB3_API).forEach((key) => {
-    const keys = key.split('.');
-    const groupKey = keys[0];
-    const methodKey = keys[1];
-    if (!api[groupKey]) { api[groupKey] = {}; }
-    const method = web3[groupKey][methodKey];
-    const collection = WEB3_API[key].collection || 'web3';
-    const actionCreator = WEB3_API[key].actionCreator || getWeb3Method;
-    api[groupKey][methodKey] = (...args) => {
-      return actionCreator({ collection, key, method, args, networkId });
-    };
-  });
-  return api;
-}
-
-function reduxifyContract({ abi, address, web3, networkId, getStore }) {
-  if (!address) { throw new Error('Address not defined'); }
-  const contractInstance = (web3.__web3 || web3).eth.contract(abi).at(address);
-  const api = {};
-  // TODO optimize/cache?
-  abi.forEach((definition) => {
-    if (definition.type !== 'function') { return; }
-    api[definition.name] = {};
-
-    // standard getter
-    api[definition.name] = (...args) => {
-      return (getStore().getIn(['web3Redux', 'networks', networkId, 'contracts', address, 'calls', definition.name, JSON.stringify(args)]) || {}).value;
-    };
-    // hook up transactions
-    api[definition.name].transaction = (...args) => {
-      return createContractTransaction({ networkId, args, address, method: contractInstance[definition.name] });
-    };
-    // hook up calls
-    const callKey = ['calls', definition.name].join('.');
-    api[definition.name].call = (...args) => {
-      return getWeb3Method({ networkId, args, address, collection: 'contracts', key: callKey, method: contractInstance[definition.name].call });
-    };
-  });
-  return api;
-}
-
 const cachedContracts = {};
 
 function generateContractAPI({ abi, address, networkId, getStore, getDispatch, web3 }) {
-  if (!web3) { return null; }
-  // TODO use provider url, too (hint, yes.)?
+  if (!address) { throw new Error('Address not defined'); }
   const cacheKey = `${networkId}${address}`;
+  // return the cached version if it exists
   if (cachedContracts[cacheKey]) { return cachedContracts[cacheKey]; }
-  const contractRedux = reduxifyContract({ abi, address, web3, networkId, getStore });
-  // bind action creators for `call` and `transaction`
-  const api = Object.keys(contractRedux).reduce((o, k) => {
-    const { transaction, call } = contractRedux[k];
+  // cached version doesn't exist, create it
+  const contractInstance = (web3.__web3 || web3).eth.contract(abi).at(address);
+  // reduce the abi into the redux methods
+  const contractRedux = abi.reduce((o, definition) => {
+    // skip if we're not dealing with a function
+    if (definition.type !== 'function') { return o; }
+    // standard getter
+    const reduxMethod = (...args) => (getStore().getIn(['web3Redux', 'networks', networkId, 'contracts', address, 'calls', definition.name, JSON.stringify(args)]) || {}).value;
+    // hook up transactions
+    const transaction = (...args) => createContractTransaction({ networkId, args, address, method: contractInstance[definition.name] });
+    // hook up calls
+    const callKey = ['calls', definition.name].join('.');
+    const call = (...args) => getWeb3Method({ networkId, args, address, collection: 'contracts', key: callKey, method: contractInstance[definition.name].call });
+    // buid the actions
     const actions = bindActionCreators({ transaction, call }, getDispatch());
-    const wrappedMethod = contractRedux[k];
-    wrappedMethod.transaction = actions.transaction;
-    wrappedMethod.call = actions.call;
-    return { ...o, [k]: wrappedMethod };
+    reduxMethod.call = actions.call;
+    reduxMethod.transaction = actions.transaction;
+    // reduce with added actions
+    return { ...o, [definition.name]: reduxMethod };
   }, {});
-  cachedContracts[cacheKey] = api;
-  return { ...api, __web3: web3.__web3 || web3 };
+  // save the cache and return it
+  cachedContracts[cacheKey] = { ...contractRedux, __web3: web3.__web3 || web3 };
+  return cachedContracts[cacheKey];
 }
 
 function generateWeb3API({ network, getStore, getDispatch, web3 }) {
   const networkId = network.id;
   if (!web3) { return null; }
-  const web3Redux = reduxifyWeb3({ networkId, web3 });
+  const web3Redux = {};
+  // TODO better refactoring
+  Object.keys(WEB3_API).forEach((key) => {
+    const keys = key.split('.');
+    const groupKey = keys[0];
+    const methodKey = keys[1];
+    if (!web3Redux[groupKey]) { web3Redux[groupKey] = {}; }
+    const method = web3[groupKey][methodKey];
+    const collection = WEB3_API[key].collection || 'web3';
+    const actionCreator = WEB3_API[key].actionCreator || getWeb3Method;
+    web3Redux[groupKey][methodKey] = (...args) => {
+      return actionCreator({ collection, key, method, args, networkId });
+    };
+  });
   const api = merge(
     Object.keys(web3Redux).reduce((o, k) => ({
       ...o, [k]: Object.keys(web3Redux[k]).reduce((o2, k2) => {
@@ -99,17 +76,16 @@ function generateWeb3API({ network, getStore, getDispatch, web3 }) {
       ...o, [k]: bindActionCreators(web3Redux[k], getDispatch()),
     }), {})
   );
-
+  // for accessing raw web3
+  api.__web3 = web3;
+  // pass a tx, wait for it to be mined
   api.eth.waitForMined = (tx, pollTime = 10 * 1000) => {
-    // TODO poll for getTransactionReceipt, then resolve
     return new Promise((resolve, reject) => {
       function poll() {
         return api.eth.getTransactionReceipt(tx).then((res) => {
           if (res) {
-            // got the transaction receipt
             resolve(res);
           } else {
-            // no dice, try agian
             setTimeout(poll, pollTime);
           }
         }).catch(reject);
@@ -117,10 +93,11 @@ function generateWeb3API({ network, getStore, getDispatch, web3 }) {
       poll();
     });
   };
-
-  const contract = (abi) => {
+  // deploy / get contract instances
+  api.eth.contract = (abi) => {
     return {
       at: (address) => generateContractAPI({ abi, address, networkId, getStore, getDispatch, web3 }),
+      // deply new
       new: (...params) => {
         const instance = web3.eth.contract(abi);
         const args = params;
@@ -128,30 +105,20 @@ function generateWeb3API({ network, getStore, getDispatch, web3 }) {
         args[args.length] = { data };
         const newData = instance.new.getData.apply(instance, args);
         args[args.length] = { ...rest, data: newData };
+        // TODO return the contract itself?
         return api.eth.sendTransaction.apply(null, args).then(tx => api.eth.waitForMined(tx));
       },
     };
   };
-
-  return {
-    ...api,
-    __web3: web3,
-    eth: {
-      ...api.eth,
-      contract,
-    },
-  };
+  return api;
 }
 
 export default function (arg) {
-  // const web3s;
-  // use store/dispatch pointer and cache reducer in this namespace for perf & getter syntax
   let store;
   let dispatch;
   let resolvedWeb3;
   function getStore() { return store; }
   function getDispatch() { return dispatch; }
-
   function resolveWeb3() {
     if (resolvedWeb3) {
       return resolvedWeb3;
@@ -164,19 +131,16 @@ export default function (arg) {
     }), {});
     return resolvedWeb3;
   }
-
   function mapStateToProps(newStore) {
     store = newStore;
     const obj = store.get('web3Redux');
     const web3ReduxStore = obj && obj.toJS() || {};
     return { web3ReduxStore };
   }
-
   function mapDispatchToProps(newDispatch) {
     dispatch = newDispatch;
     return {};
   }
-
   function mergeProps(stateProps, dispatchProps, ownProps) {
     return {
       ...ownProps,
@@ -185,6 +149,5 @@ export default function (arg) {
       status: store.getIn(['web3Redux', 'status']) || {},
     };
   }
-
   return connect(mapStateToProps, mapDispatchToProps, mergeProps);
 }
