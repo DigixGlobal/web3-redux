@@ -10,9 +10,6 @@ class Web3ConnectTest extends Component {
     this.handleTrigger = this.handleTrigger.bind(this);
     this.setData = this.setData.bind(this);
   }
-  componentDidMount() {
-    this.props.web3s.default.version.getNode();
-  }
   setData(data) {
     this.setState({ data: JSON.stringify({ test: data }) });
   }
@@ -29,7 +26,7 @@ class Web3ConnectTest extends Component {
 }
 
 Web3ConnectTest.propTypes = {
-  web3s: PropTypes.object.isRequired,
+  networks: PropTypes.object.isRequired,
   status: PropTypes.object.isRequired,
 };
 

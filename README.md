@@ -19,7 +19,7 @@ export default class ExampleTokenBalanceAndTransfer extends Component {
     this.getBalances();
   }
   getBalances() {
-    // pluck the passed props `contract` and `web3s`
+    // pluck the passed props `contract` and `networks`
     const { contract, web3 } = this.props;
     // `web3-redux` provides promisified redux action creators:
     web3.eth.getBalance(accounts[0]);
@@ -71,11 +71,11 @@ The `web3Connect`ed component will receive the following props:
 
 ### `status` object containing connectivity status
 
-`pending` *boolean* XHR requests pending
+* `pending` *boolean* XHR requests pending
 
-### `web3s` object containing namespaced reduxified providers
+### `networks` object containing namespaced reduxified providers
 
-Access `this.props.web3s.default.web3` or swap `default` for a key you passed in the `web3Connect` config. Each network has a `web3` object with the following methods:
+Access `this.props.networks.default.web3` or swap `default` for a key you passed in the `web3Connect` config. Each network has a `web3` object with the following methods:
 
 |Fetch Data|Return Value|
 |---|---|
@@ -110,18 +110,18 @@ Transaction Creators
 
 Helper methods
 
-* `eth.waitForMined(txHash)`
+* `eth.waitForMined(txHash)` waits for a transaction to be confirmed in a block
 
 Contract Creator
 
 * `eth.contract(abi)` define the contract using it's ABI
   * `at(address)` returns reduxified contract api linked to `address`
-  * `new(arg1, arg2, { from, gas })` deploys new instance
+  * `new(arg1, arg2, { from, gas })` deploys and returns new reduxified instance
 
 Contract Instances
 
 ```javascript
-const MyContract = this.props.web3s.default.web3.eth.contract(abi).at(address);
+const MyContract = this.props.networks.default.web3.eth.contract(abi).at(address);
 ```
 
 All ABI methods are converted with the following:
@@ -181,8 +181,8 @@ const tokenAddress = '0x123..000';
 
 class App extends Component {
   render() {
-    const { web3s, status } = this.props;
-    const { web3 } = web3s.default;
+    const { networks, status } = this.props;
+    const { web3 } = networks.default;
     return (
       <div>
         {status.pending && <div>Loading...</div>}
@@ -196,7 +196,7 @@ class App extends Component {
 }
 
 App.propTypes = {
-  web3s: PropTypes.object.isRequired,
+  networks: PropTypes.object.isRequired,
   status: PropTypes.object.isRequired,
 };
 
@@ -258,7 +258,7 @@ handleSubmit(e) {
     // update the ui with the transaction info
     this.setState({ transactionHash });
     return web3.eth.waitForMined(transactionHash);
-  .then((tx) => {
+  .then(() => {
     // transaction is mined!
     this.setState({ loading: false });
   }).catch((error) => {
@@ -270,8 +270,7 @@ handleSubmit(e) {
 ## TODO
 
 ```
-- blockNumber middleware
-- rename `web3s` -> `networks`
-- web3Connect: refactor & figure out caching
+- web3Connect: figure out caching
 - test all methods
+- optimize getter/rerender?
 ```

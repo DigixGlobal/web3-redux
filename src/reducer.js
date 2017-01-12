@@ -48,7 +48,7 @@ export default function (state = fromJS({}), action) {
         fetching: false,
         error: false,
         value: action.value,
-        blockFetched: 999, // todo determine properly
+        // blockFetched: 999, // todo determine properly
       }));
     default:
       return state;

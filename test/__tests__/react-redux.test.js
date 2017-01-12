@@ -22,10 +22,12 @@ function snapshotTest(getter) {
 it('initializes correctly', () => {
   snapshotTest(({ props }) => [
     props,
-    props.web3s.default,
-    props.web3s.default.eth,
-    props.web3s.default.version,
-    props.web3s.default.net,
+    props.networks,
+    props.networks.default,
+    props.networks.default.web3,
+    props.networks.default.web3.eth,
+    props.networks.default.web3.version,
+    props.networks.default.web3.net,
   ].map(o => Object.keys(o)));
 });
 
@@ -33,13 +35,13 @@ it('gets the correct web3 method values', (done) => {
   // TODO test all values
   triggerMethod(({ props }) => {
     Promise.all([
-      props.web3s.default.version.getNode(),
-      props.web3s.default.eth.getBalance(testAddress),
-      props.web3s.default.eth.getCoinbase().then(res => { from = res; }),
+      props.networks.default.web3.version.getNode(),
+      props.networks.default.web3.eth.getBalance(testAddress),
+      props.networks.default.web3.eth.getCoinbase().then(res => { from = res; }),
     ])
     .then(() => snapshotTest([
-      props.web3s.default.version.node(),
-      props.web3s.default.eth.balance(testAddress),
+      props.networks.default.web3.version.node(),
+      props.networks.default.web3.eth.balance(testAddress),
     ]))
     .then(done);
   });
@@ -47,17 +49,12 @@ it('gets the correct web3 method values', (done) => {
 
 it('deploys contracts', (done) => {
   triggerMethod(({ props }) => {
-    const { eth } = props.web3s.default;
+    const { eth } = props.networks.default.web3;
     const contract = eth.contract(testContract.abi);
     contract.new({ data: testContract.unlinked_binary, from, gas })
-    .then((tx) => {
-      snapshotTest(() => Object.keys(tx));
-      contractAddress = tx.contractAddress;
-      return tx.transactionHash;
-    })
-    .then((txHash) => eth.waitForMined(txHash))
-    .then(() => {
-      snapshotTest(() => Object.keys(contract.at(contractAddress)));
+    .then((deployed) => {
+      snapshotTest(() => Object.keys(deployed));
+      contractAddress = deployed.address;
     })
     .then(done);
   });
@@ -65,7 +62,7 @@ it('deploys contracts', (done) => {
 
 it('contract methods work', (done) => {
   triggerMethod(({ props }) => {
-    const { eth } = props.web3s.default;
+    const { eth } = props.networks.default.web3;
     const contract = eth.contract(testContract.abi);
     const contractInstance = contract.at(contractAddress);
     contractInstance.register.transaction('test', testAddress, { from, gas })
