@@ -270,7 +270,10 @@ handleSubmit(e) {
 ## TODO
 
 ```
-- web3Connect: figure out caching
-- test all methods
-- optimize getter/rerender?
+- v1
+  - web3Connect: figure out caching
+  - test all methods
+- next
+  - optimize getter/rerender?
+  - more middleware
 ```

@@ -84,3 +84,5 @@ it('contract methods work', (done) => {
     .then(done);
   });
 });
+
+// TODO test status

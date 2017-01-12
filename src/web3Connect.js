@@ -8,6 +8,7 @@ export default function (arg) {
   let resolvedWeb3;
   function getStore() { return store; }
   function getDispatch() { return dispatch; }
+  // todo document
   function resolveWeb3() {
     if (resolvedWeb3) {
       return resolvedWeb3;

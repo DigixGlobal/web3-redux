@@ -51,7 +51,7 @@ export default function ({ network, getStore, getDispatch, web3 }) {
   api.rawWeb3 = web3;
   // reduce the web3 api and decorate with methods
   api.web3 = Object.keys(web3API).reduce((o, key) => {
-    // get specific actions for this method defined in web3Api.js
+    // get specific actions for this method
     const collection = web3API[key].collection || 'web3';
     const actionCreator = web3API[key].actionCreator || getWeb3Method;
     // eth.getNode => [eth, getNode]
