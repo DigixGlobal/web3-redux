@@ -1,6 +1,6 @@
 {
   "name": "web3-redux",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Reduxified Web3",
   "author": "Chris Hitchcott <hitchcott@gmail.com> (http://hitchcott.com)",
   "main": "src/index.js",
