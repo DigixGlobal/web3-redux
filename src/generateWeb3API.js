@@ -90,7 +90,7 @@ export default function ({ network, getStore, getDispatch, web3 }) {
           }
         }).catch(reject);
       }
-      poll();
+      setTimeout(poll, 10); // timeout for testrpc
     });
   };
   // deploy / get contract instances
