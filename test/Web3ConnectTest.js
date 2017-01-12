@@ -26,8 +26,7 @@ class Web3ConnectTest extends Component {
 }
 
 Web3ConnectTest.propTypes = {
-  networks: PropTypes.object.isRequired,
-  status: PropTypes.object.isRequired,
+  web3Redux: PropTypes.object.isRequired,
 };
 
 export default web3Connect({

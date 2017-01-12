@@ -33,11 +33,14 @@ export default function (arg) {
     return {};
   }
   function mergeProps(stateProps, dispatchProps, ownProps) {
+    const { web3ReduxStore, ...rest } = stateProps;
     return {
       ...ownProps,
-      ...stateProps,
-      networks: resolveWeb3(),
-      status: store.getIn(['web3Redux', 'status']) || {},
+      ...rest,
+      web3Redux: {
+        networks: resolveWeb3(),
+        status: store.getIn(['web3Redux', 'status']) || {},
+      },
     };
   }
   return connect(mapStateToProps, mapDispatchToProps, mergeProps);
