@@ -4,6 +4,17 @@
 
 `web3-redux` is a wrapper library for web3 that provides seamless integration into react-redux projects. It allows for familiar usage of web3 and contract methods in the react-redux style, and exposes a redux's middleware system for powerful state-tracking and caching options.
 
+## TODO
+
+```
+- v1
+  - implement better caching
+- vNext
+  - optimize getter/rerender?
+  - more middleware (blockNumber, batching, caching)
+  - data subscriptions
+```
+
 ## Example Component
 
 ```javascript
@@ -265,15 +276,4 @@ handleSubmit(e) {
     this.setState({ error: `${error}`, loading: false });
   });
 }
-```
-
-## TODO
-
-```
-- v1
-  - web3Connect: figure out caching
-  - test all methods
-- next
-  - optimize getter/rerender?
-  - more middleware
 ```
