@@ -4,7 +4,7 @@
 
 `web3-redux` is a wrapper library for web3 that provides seamless integration into react-redux projects. It allows for familiar usage of web3 and contract methods in the react-redux style, and exposes a redux's middleware system for powerful state-tracking and caching options.
 
-## TODO
+## [Work in Progress]
 
 ```
 - v1
@@ -30,7 +30,7 @@ export default class ExampleTokenBalanceAndTransfer extends Component {
     this.getBalances();
   }
   getBalances() {
-    // pluck the passed props `contract` and `networks`
+    // pluck the passed props `contract` and `web3`
     const { contract, web3 } = this.props;
     // `web3-redux` provides promisified redux action creators:
     web3.eth.getBalance(accounts[0]);
@@ -80,13 +80,24 @@ TokenBalance.propTypes = {
 
 The `web3Connect`ed component will receive the following props:
 
+```javascript
+web3Redux: {
+  status: { ... },
+  networks: {
+    [networkId]: {
+      web3: { ... },
+    },
+  },
+}
+```
+
 ### `status` object containing connectivity status
 
 * `pending` *boolean* XHR requests pending
 
 ### `networks` object containing namespaced reduxified providers
 
-Access `this.props.networks.default.web3` or swap `default` for a key you passed in the `web3Connect` config. Each network has a `web3` object with the following methods:
+Access `this.props.web3Redux.networks.default.web3` or swap `default` for a key you passed in the `web3Connect` config. Each network has a `web3` object with the following methods:
 
 |Fetch Data|Return Value|
 |---|---|
@@ -132,7 +143,7 @@ Contract Creator
 Contract Instances
 
 ```javascript
-const MyContract = this.props.networks.default.web3.eth.contract(abi).at(address);
+const MyContract = this.props.web3Redux.networks.default.web3.eth.contract(abi).at(address);
 ```
 
 All ABI methods are converted with the following:
@@ -192,11 +203,11 @@ const tokenAddress = '0x123..000';
 
 class App extends Component {
   render() {
-    const { networks, status } = this.props;
-    const { web3 } = networks.default;
+    const { web3Redux } = this.props;
+    const { web3 } = web3Redux.networks.default;
     return (
       <div>
-        {status.pending && <div>Loading...</div>}
+        {web3Redux.status.pending && <div>Loading...</div>}
         <Balances
           web3={web3}
           tokenContract={web3.contract(tokenAbi).at(tokenAddress)}
