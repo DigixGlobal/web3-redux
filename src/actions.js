@@ -8,22 +8,22 @@ export const actions = {
   WEB3_GET: `${NAMESPACE} getting web3 method`,
   WEB3_GOT: `${NAMESPACE} got web3 method`,
   WEB3_GET_FAILED: `${NAMESPACE} failed to get web3 method`,
-  PENDING: `${NAMESPACE} pending`,
-  NOT_PENDING: `${NAMESPACE} not pending`,
+  STATUS: `${NAMESPACE} status update`,
+  WEB3_INIT: `${NAMESPACE} initialized`,
 };
 
 export function getWeb3Method({ method, args = [], ...params }) {
   return (dispatch) => {
     return new Promise((resolve, reject) => {
       dispatch({ type: actions.WEB3_GET, args, ...params });
-      method.apply(null, args.concat([(err, res) => {
+      method(...args, (err, res) => {
         if (err) {
           dispatch({ type: actions.WEB3_GET_FAILED, args, error: err, ...params });
           return reject(err);
         }
         dispatch({ type: actions.WEB3_GOT, args, value: res, ...params });
         return resolve(res);
-      }]));
+      });
     });
   };
 }

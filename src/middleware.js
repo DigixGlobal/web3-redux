@@ -14,10 +14,10 @@ export default function ({ dispatch }) {
         pending--;
       }
       if (previous === 0 && pending === 1) {
-        dispatch({ type: actions.PENDING });
+        dispatch({ type: actions.STATUS, status: { pending: true } });
       }
       if (previous === 1 && pending === 0) {
-        dispatch({ type: actions.NOT_PENDING });
+        dispatch({ type: actions.STATUS, status: { pending: false } });
       }
       if (type === matchedActions[0] || type === matchedActions[2]) {
         // cancel this action for perf

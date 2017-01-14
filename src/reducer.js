@@ -38,10 +38,10 @@ export default function (state = fromJS({}), action) {
       return setCollection(state, action, ['transactions', action.id], action.payload);
     case actions.TRANSACTION_CREATED:
       return setCollection(state, action, { created: action.created });
-    case actions.PENDING:
-      return state.updateIn(['status'], (o) => ({ ...o, pending: true }));
-    case actions.NOT_PENDING:
-      return state.updateIn(['status'], (o) => ({ ...o, pending: false }));
+    case actions.STATUS:
+      return state.updateIn(['status'], o => ({ ...o, ...action.status }));
+    case actions.WEB3_INIT:
+      return state.updateIn(['networks', action.networkId, 'status'], o => ({ ...o, connected: !action.err }));
     case actions.WEB3_GOT:
       return updateCollection(state, action, o => ({
         ...o,

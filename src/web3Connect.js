@@ -34,11 +34,15 @@ export default function (arg) {
   }
   function mergeProps(stateProps, dispatchProps, ownProps) {
     const { web3ReduxStore, ...rest } = stateProps;
+    const networks = resolveWeb3();
     return {
       ...ownProps,
       ...rest,
       web3Redux: {
-        networks: resolveWeb3(),
+        networks: Object.keys(networks).reduce((o, k) => ({ ...o, [k]: {
+          ...networks[k],
+          status: store.getIn(['web3Redux', 'networks', k, 'status']) || {},
+        } }), {}),
         status: store.getIn(['web3Redux', 'status']) || {},
       },
     };
