@@ -94,9 +94,14 @@ export default function ({ network, getStore, getDispatch, web3 }) {
     });
   };
   // deploy / get contract instances
+  const contractCache = {};
   api.web3.eth.contract = (abi) => {
     return {
-      at: (address) => generateContractAPI({ abi, address, networkId, getStore, getDispatch, web3 }),
+      at: (address) => {
+        if (contractCache[address]) { return contractCache[address]; }
+        contractCache[address] = generateContractAPI({ abi, address, networkId, getStore, getDispatch, web3 });
+        return contractCache[address];
+      },
       new: (...params) => {
         // deply a new contract
         const instance = web3.eth.contract(abi);

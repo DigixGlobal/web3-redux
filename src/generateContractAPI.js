@@ -1,14 +1,8 @@
 import { bindActionCreators } from 'redux';
 import { getWeb3Method, createContractTransaction } from './actions';
 
-const cachedContracts = {};
-
 export default function ({ abi, address, networkId, getStore, getDispatch, web3 }) {
   if (!address) { throw new Error('Address not defined'); }
-  // TODO use another cache?
-  const cacheKey = `${networkId}${address}`;
-  // return the cached version if it exists
-  if (cachedContracts[cacheKey]) { return cachedContracts[cacheKey]; }
   // cached version doesn't exist, create it
   const contractInstance = (web3.__web3 || web3).eth.contract(abi).at(address);
   // reduce the abi into the redux methods
@@ -29,7 +23,8 @@ export default function ({ abi, address, networkId, getStore, getDispatch, web3 
     // reduce with added actions
     return { ...o, [definition.name]: reduxMethod };
   }, {});
-  // save the cache and return it
-  cachedContracts[cacheKey] = { ...contractRedux, address, __web3: web3.__web3 || web3 };
-  return cachedContracts[cacheKey];
+  // decorate
+  contractRedux.address = address;
+  contractRedux.__web3 = web3.__web3 || web3;
+  return contractRedux;
 }
