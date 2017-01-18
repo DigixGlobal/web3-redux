@@ -10,7 +10,7 @@ export default function ({ abi, address, networkId, getStore, getDispatch, web3 
     // skip if we're not dealing with a function
     if (definition.type !== 'function') { return o; }
     // standard getter
-    const reduxMethod = (...args) => (getStore().getIn(['web3Redux', 'networks', networkId, 'contracts', address, 'calls', definition.name, JSON.stringify(args)]) || {}).value;
+    const reduxMethod = (...args) => (getStore().web3Redux.getIn(['networks', networkId, 'contracts', address, 'calls', definition.name, JSON.stringify(args)]) || {}).value;
     // hook up transactions
     const transaction = (...args) => createContractTransaction({ networkId, args, address, method: contractInstance[definition.name] });
     // hook up calls

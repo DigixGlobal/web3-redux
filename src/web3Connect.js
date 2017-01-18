@@ -23,7 +23,7 @@ export default function (arg) {
   }
   function mapStateToProps(newStore) {
     store = newStore;
-    const obj = store.get('web3Redux');
+    const obj = store.web3Redux;
     // TODO optimize?
     const web3ReduxStore = obj && obj.toJS() || {};
     return { web3ReduxStore };
@@ -32,18 +32,15 @@ export default function (arg) {
     dispatch = newDispatch;
     return {};
   }
-  function mergeProps(stateProps, dispatchProps, ownProps) {
-    const { web3ReduxStore, ...rest } = stateProps;
+  function mergeProps() {
     const networks = resolveWeb3();
     return {
-      ...ownProps,
-      ...rest,
       web3Redux: {
         networks: Object.keys(networks).reduce((o, k) => ({ ...o, [k]: {
           ...networks[k],
-          status: store.getIn(['web3Redux', 'networks', k, 'status']) || {},
+          status: store.web3Redux.getIn(['networks', k, 'status']) || {},
         } }), {}),
-        status: store.getIn(['web3Redux', 'status']) || {},
+        status: store.web3Redux.getIn(['status']) || {},
       },
     };
   }

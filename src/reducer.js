@@ -32,6 +32,11 @@ function updateCollection(state, action, append, update) {
   return state.updateIn(collectionKey(action, update && append), update || append);
 }
 
+// ensure value is serializable
+function parseValue(value) {
+  return value.toString ? value.toString() : value;
+}
+
 export default function (state = fromJS({}), action) {
   switch (action.type) {
     case actions.CONTRACT_UPDATED_TRANSACTION:
@@ -47,7 +52,7 @@ export default function (state = fromJS({}), action) {
         ...o,
         fetching: false,
         error: false,
-        value: action.value,
+        value: parseValue(action.value),
         // blockFetched: 999, // todo determine properly
       }));
     default:

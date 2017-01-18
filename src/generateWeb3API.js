@@ -67,11 +67,11 @@ export default function ({ network, getStore, getDispatch, web3 }) {
       const getterMethod = methodKey.split('get')[1];
       const getterKey = `${getterMethod[0].toLowerCase()}${getterMethod.slice(1)}`;
       reduxMethod[getterKey] = (...args) => {
-        const gotStore = getStore();
+        const gotStore = getStore().web3Redux;
         if (!gotStore) { return null; }
         const index = getterKey === 'transaction' ?
-        ['web3Redux', 'networks', networkId, 'transactions', args[0]] :
-        ['web3Redux', 'networks', networkId, 'web3', groupKey, methodKey, JSON.stringify(args)];
+        ['networks', networkId, 'transactions', args[0]] :
+        ['networks', networkId, 'web3', groupKey, methodKey, JSON.stringify(args)];
         return (gotStore.getIn(index) || {}).value;
       };
     }
