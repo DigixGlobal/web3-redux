@@ -32,9 +32,9 @@ function updateCollection(state, action, append, update) {
   return state.updateIn(collectionKey(action, update && append), update || append);
 }
 
-// ensure value is serializable
-function parseValue(value) {
-  return value.toString ? value.toString() : value;
+// ensure value is serializable (not bigNumber)
+function serializedValue(value) {
+  return value && value.toString ? value.toString() : value;
 }
 
 export default function (state = fromJS({}), action) {
@@ -52,7 +52,7 @@ export default function (state = fromJS({}), action) {
         ...o,
         fetching: false,
         error: false,
-        value: parseValue(action.value),
+        value: serializedValue(action.value),
         // blockFetched: 999, // todo determine properly
       }));
     default:
