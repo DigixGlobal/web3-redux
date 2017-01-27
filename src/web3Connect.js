@@ -32,9 +32,10 @@ export default function (arg) {
     dispatch = newDispatch;
     return {};
   }
-  function mergeProps() {
+  function mergeProps(stateProps, dispatchProps, ownProps) {
     const networks = resolveWeb3();
     return {
+      ...ownProps,
       web3Redux: {
         networks: Object.keys(networks).reduce((o, k) => ({ ...o, [k]: {
           ...networks[k],
