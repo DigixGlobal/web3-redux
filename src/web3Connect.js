@@ -16,8 +16,8 @@ export default function (arg) {
     if (typeof arg === 'function') {
       return arg({ getStore, getDispatch, generateWeb3API });
     }
-    resolvedWeb3 = (typeof arg !== 'function') && Object.keys(arg).reduce((o, k) => ({
-      ...o, [k]: generateWeb3API({ network: { id: k }, web3: arg[k], getStore, getDispatch }),
+    resolvedWeb3 = (typeof arg !== 'function') && Object.keys(arg).reduce((o, key) => ({
+      ...o, [key]: generateWeb3API({ network: { key }, web3: arg[key], getStore, getDispatch }),
     }), {});
     return resolvedWeb3;
   }

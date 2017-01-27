@@ -43,7 +43,7 @@ const web3API = {
 };
 
 export default function ({ network, getStore, getDispatch, web3 }) {
-  const networkId = network.id;
+  const networkId = network.key;
   if (!web3) { return null; }
   // TODO better refactoring
   const api = {};
