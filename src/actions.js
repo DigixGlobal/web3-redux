@@ -8,7 +8,7 @@ export const actions = {
   WEB3_GET: `${NAMESPACE} getting web3 method`,
   WEB3_GOT: `${NAMESPACE} got web3 method`,
   WEB3_GET_FAILED: `${NAMESPACE} failed to get web3 method`,
-  STATUS: `${NAMESPACE} status update`,
+  NETWORK_STATUS: `${NAMESPACE} status update`,
   WEB3_INIT: `${NAMESPACE} initialized`,
 };
 

@@ -45,8 +45,8 @@ export default function (state = fromJS({}), action) {
       return setCollection(state, action, { created: action.created });
     case actions.STATUS:
       return state.updateIn(['status'], o => ({ ...o, ...action.status }));
-    case actions.WEB3_INIT:
-      return state.updateIn(['networks', action.networkId, 'status'], o => ({ ...o, connected: !action.err }));
+    case actions.NETWORK_STATUS:
+      return state.setIn(['networks', action.networkId, 'status'], action.status);
     case actions.WEB3_GOT:
       return updateCollection(state, action, o => ({
         ...o,
