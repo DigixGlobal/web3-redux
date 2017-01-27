@@ -1,13 +1,13 @@
-import { connect } from 'react-redux';
-
 import generateWeb3API from './generateWeb3API';
 
 export default function (arg) {
+  // TODO make this purely functional
   let store;
   let dispatch;
   let resolvedWeb3;
   function getStore() { return store; }
   function getDispatch() { return dispatch; }
+
   // todo document
   function resolveWeb3() {
     if (resolvedWeb3) {
@@ -42,5 +42,5 @@ export default function (arg) {
       },
     };
   }
-  return connect(mapStateToProps, mapDispatchToProps, mergeProps);
+  return [mapStateToProps, mapDispatchToProps, mergeProps];
 }
