@@ -21,12 +21,9 @@ export default function (arg) {
     }), {});
     return resolvedWeb3;
   }
-  function mapStateToProps(newStore) {
-    store = newStore;
-    const obj = store.web3Redux;
-    // TODO optimize?
-    const web3ReduxStore = obj && obj.toJS() || {};
-    return { web3ReduxStore };
+  function mapStateToProps(state) {
+    store = state;
+    return { web3Redux: store.web3Redux || {} };
   }
   function mapDispatchToProps(newDispatch) {
     dispatch = newDispatch;
