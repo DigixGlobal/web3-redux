@@ -25,19 +25,15 @@ const web3API = {
   'eth.getUncle': {},
   'eth.getTransactionFromBlock': {},
   'eth.getTransaction': {
-    collection: 'transactions',
     actionCreator: getTransaction,
   },
   'eth.getTransactionReceipt': {
-    collection: 'transactions',
     actionCreator: getTransaction,
   },
   'eth.sendTransaction': {
-    collection: 'transactions',
     actionCreator: createTransaction,
   },
   'eth.sendRawTransaction': {
-    collection: 'transactions',
     actionCreator: createTransaction,
   },
 };
@@ -52,14 +48,13 @@ export default function ({ network, getStore, getDispatch, web3 }) {
   // reduce the web3 api and decorate with methods
   api.web3 = Object.keys(web3API).reduce((o, key) => {
     // get specific actions for this method
-    const collection = web3API[key].collection || 'web3';
     const actionCreator = web3API[key].actionCreator || getWeb3Method;
     // eth.getNode => [eth, getNode]
     const [groupKey, methodKey] = key.split('.');
     // the web3 method itself
     const method = web3[groupKey][methodKey];
     // default getter
-    const { action } = bindActionCreators({ action: (...args) => actionCreator({ collection, key, method, args, networkId }) }, getDispatch());
+    const { action } = bindActionCreators({ action: (...args) => actionCreator({ key, method, args, networkId }) }, getDispatch());
     // all instances have an action creator
     const reduxMethod = { [methodKey]: action };
     // add the getter if it starts with `get`

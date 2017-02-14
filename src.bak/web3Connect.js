@@ -23,7 +23,7 @@ export default function (arg) {
   }
   function mapStateToProps(state) {
     store = state;
-    return { web3Redux: store.web3Redux.toJS() };
+    return { web3Redux: store.web3Redux };
   }
   function mapDispatchToProps(newDispatch) {
     dispatch = newDispatch;
