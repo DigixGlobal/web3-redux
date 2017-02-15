@@ -1,54 +1,34 @@
+import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
+import generateWeb3ReduxApi from './generateWeb3ReduxApi';
+import generateNetworkApi from './generateNetworkApi';
 
-function generateContractApi(dispatch) {
-
-}
-
-function generateNetworkApi({ networkApi, web3Api, dispatch }) {
-  // disaptch
-}
-
-function generateWeb3ReduxApi(state, dispatch) {
-  console.log(state, dispatch);
+function getWeb3Api(state, dispatch) {
   // for each network that exists, create it's API
-  return { test: true };
-  // return {
-  //   addNetwork,
-  //   removeNetwork,
-  //   pending,
-  // }
-  // for each network in store.networks, return the
-
-  // addNetwork({ networkId, web3 }),
-  // removeNetwork('networkId')
+  return {
+    ...generateWeb3ReduxApi(dispatch),
+    networks: Object.keys(state.networks).reduce((o, networkId) => {
+      return { ...o, [networkId]: generateNetworkApi({ networkId, state, dispatch }) };
+    }, {}),
+  };
 }
 
-// cache the created network API
-
-// export default function () {
-//   function mapStateToProps() {
-//
-//   }
-//   function mapDispatchToProps() {
-//
-//   }
-//   return
-// }
-
-export default function web3Connect(passedMapStateToProps) {
+export default function web3Connect(passedMapStateToProps, passedActions) {
   // allow user to map custom map
   function mapStateToProps(state) {
     return { ...passedMapStateToProps(state), web3Redux: state.web3Redux };
   }
 
   function mapDispatchToProps(dispatch) {
-    return { dispatch };
+    return { dispatch, ...passedActions };
   }
 
-  function mergeProps(stateProps, { dispatch }) {
+  function mergeProps(stateProps, dispatchProps) {
+    const { dispatch, ...customActions } = dispatchProps;
     return {
       ...stateProps,
-      web3Redux: generateWeb3ReduxApi(stateProps.web3Redux, dispatch),
+      ...bindActionCreators(customActions, dispatch),
+      web3Redux: getWeb3Api(stateProps.web3Redux, dispatch),
     };
   }
 

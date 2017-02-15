@@ -1,3 +1,5 @@
+import { networkApis } from './generateNetworkApi';
+
 const NAMESPACE = 'web3-redux';
 
 export const actions = {
@@ -7,21 +9,20 @@ export const actions = {
   // TRANSACTION_UPDATED: `${NAMESPACE} updated transaction`,
 };
 
-export const web3Instances = {};
-
 function removeWeb3(networkId) {
-  if (web3Instances[networkId]) {
-    web3Instances[networkId].reset();
-    delete web3Instances[networkId];
+  if (networkApis[networkId]) {
+    if (networkApis[networkId].web3) {
+      networkApis[networkId].web3.reset();
+    }
+    delete networkApis[networkId];
   }
 }
 
 export function setNetwork({ networkId, web3 }) {
   return (dispatch) => {
     removeWeb3(networkId);
-    web3Instances[networkId] = web3;
+    networkApis[networkId] = { web3 };
     dispatch({ type: actions.NETWORK_SET_WEB3, networkId, payload: { enabled: !!web3 } });
-    // console.log({ web3Instances });
   };
 }
 

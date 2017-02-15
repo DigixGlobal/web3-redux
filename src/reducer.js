@@ -14,11 +14,11 @@ const DEFAULT_STATE = {
 //     return state;
 // }
 
-update.extend('$unset', (keysToRemove, original) => {
-  const copy = Object.assign({}, original);
-  for (const key of keysToRemove) delete copy[key];
-  return copy;
-});
+// update.extend('$unset', (keysToRemove, original) => {
+//   const copy = Object.assign({}, original);
+//   for (const key of keysToRemove) delete copy[key];
+//   return copy;
+// });
 
 function updateNetwork(state, action, query) {
   const network = state.networks[action.networkId] || {};
@@ -26,6 +26,7 @@ function updateNetwork(state, action, query) {
 }
 
 export default function (state = DEFAULT_STATE, action) {
+  console.log(action);
   switch (action.type) {
     case actions.NETWORK_SET_WEB3: {
       // set or unset the provider of the network
