@@ -15,6 +15,9 @@ module.exports = {
       test: /\.html$/,
       loader: 'html-loader',
     }, {
+      test: /\.json$/,
+      loader: 'json-loader',
+    }, {
       test: /\.js$/,
       include: [
         path.resolve('./src'),

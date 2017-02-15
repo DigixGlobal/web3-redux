@@ -1,14 +1,13 @@
 import React from 'react';
 import { render } from 'react-dom';
-import { createStore } from 'redux';
+import { createStore, applyMiddleware, combineReducers } from 'redux';
 import { Provider } from 'react-redux';
+import thunk from 'redux-thunk';
+import web3Redux from 'web3-redux/src/reducer';
+
 import App from './components/App';
 
-import reducer from 'web3-redux/src/reducer';
-
-console.log('reducer is', reducer);
-
-const store = createStore(reducer);
+const store = createStore(combineReducers({ web3Redux }), applyMiddleware(thunk));
 
 render(
   <Provider store={store}>
