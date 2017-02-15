@@ -3,7 +3,7 @@ import { bindActionCreators } from 'redux';
 import { web3Method } from './actions';
 import { SUPPORTED_WEB3_METHODS } from './constants';
 import { degrade, getMethodKey } from './helpers';
-
+import generateContractApi from './generateContractApi';
 // export cache to actions so it's invalided when web3 is reset
 export const networkApis = {};
 
@@ -60,7 +60,34 @@ function generateNetworkApi({ networkId, getState, dispatch }) {
       setTimeout(poll, 10); // timeout for testrpc
     });
   };
-  // api.eth.contract ...
+
+  // deploy / get contract instances
+  networkApis[networkId].contracts = {};
+  web3.eth.contract = (abi) => {
+    return {
+      at: (address) => {
+        if (!networkApis[networkId].contracts[address]) {
+          networkApis[networkId].contracts[address] = generateContractApi({
+            abi, address, networkId, getState, dispatch, web3: networkApis[networkId].web3,
+          });
+        }
+        return networkApis[networkId].contracts[address];
+      },
+      new: (...params) => {
+        // deply a new contract
+        const instance = web3.eth.contract(abi);
+        const args = params;
+        const { data, ...rest } = args[args.length - 1];
+        args[args.length] = { data };
+        const newData = instance.new.getData(...args);
+        args[args.length] = { ...rest, data: newData };
+        return web3.eth.sendTransaction(...args)
+        .then((transactionHash) => web3.eth.waitForMined(transactionHash))
+        .then(({ contractAddress }) => instance.at(contractAddress));
+      },
+    };
+  };
+
   return { web3 };
 }
 

@@ -8,13 +8,9 @@ export const actions = {
   NETWORK_REMOVED: `${NAMESPACE} network removed`,
   WEB3_METHOD_SUCCESS: `${NAMESPACE} web3 method success`,
   TRANSACTION_UPDATED: `${NAMESPACE} transaction updated`,
-  // TODO implement
-  // WEB3_METHOD_DISPATCHED: `${NAMESPACE} web3 method dispatched`,
-  // WEB3_METHOD_ERROR: `${NAMESPACE} web3 method error`,
 };
 
 function removeWeb3(networkId) {
-  // TODO cancel ajax
   if (networkApis[networkId]) {
     if (networkApis[networkId].web3) {
       networkApis[networkId].web3.reset();
@@ -41,9 +37,8 @@ export function web3Method({ groupName, methodName, networkId, args, actionName,
       const type = actionName || actions.WEB3_METHOD_SUCCESS;
       try {
         networkApis[networkId].web3[groupName][methodName](...args, (err, value) => {
-          // TODO serialize value?
           if (err) { return reject(err); }
-          dispatch({ type, networkId, key, payload: { value } });
+          dispatch({ type, networkId, key, payload: { value, updated: new Date() } });
           return resolve(value);
         });
       } catch (err) {
@@ -60,7 +55,6 @@ export function getTransaction({ args, ...rest }) {
 export function createTransaction({ args, groupName, methodName, networkId }) {
   return (dispatch) => {
     return new Promise((resolve, reject) => {
-      // TODO implement dispatch/error actions?
       try {
         networkApis[networkId].web3[groupName][methodName](...args, (err, txHash) => {
           if (err) { return reject(err); }
@@ -73,3 +67,7 @@ export function createTransaction({ args, groupName, methodName, networkId }) {
     });
   };
 }
+
+// TODO implement
+// callContractMethod,
+// createContractTransaction
