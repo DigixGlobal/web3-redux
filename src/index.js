@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import generateWeb3ReduxApi from './generateWeb3ReduxApi';
 import generateNetworkApi from './generateNetworkApi';
 
-// TODO should we scope this?
+// TODO should we scope this? this the right place to put it?
 let updatedState;
 
 function getState() { return updatedState; }
@@ -25,14 +25,14 @@ export default function web3Connect(passedMapStateToProps, passedActions) {
   }
 
   function mapDispatchToProps(dispatch) {
-    return { dispatch, ...passedActions };
+    return { dispatch, ...bindActionCreators(passedActions, dispatch) };
   }
-
-  function mergeProps(stateProps, dispatchProps) {
+  function mergeProps(stateProps, dispatchProps, ownProps) {
     const { dispatch, ...customActions } = dispatchProps;
     return {
       ...stateProps,
-      ...bindActionCreators(customActions, dispatch),
+      ...ownProps,
+      ...customActions,
       web3Redux: getWeb3Api(stateProps.web3Redux, dispatch),
     };
   }

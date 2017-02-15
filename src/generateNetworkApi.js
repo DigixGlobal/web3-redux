@@ -45,8 +45,22 @@ function generateNetworkApi({ networkId, getState, dispatch }) {
       ...o2, ...generateWeb3Methods({ methodName, networkId, getState, dispatch, groupName }),
     }), {}),
   }), {});
+
+  web3.eth.waitForMined = (tx, pollTime = 5 * 1000) => {
+    return new Promise((resolve, reject) => {
+      function poll() {
+        return web3.eth.getTransactionReceipt(tx).then((res) => {
+          if (res) {
+            resolve(res);
+          } else {
+            setTimeout(poll, pollTime);
+          }
+        }).catch(reject);
+      }
+      setTimeout(poll, 10); // timeout for testrpc
+    });
+  };
   // api.eth.contract ...
-  // api.eth.waitForMined ...
   return { web3 };
 }
 

@@ -38,10 +38,17 @@ class Data extends Component {
     this.props.web3Redux.networks.eth.web3.eth.getBlockNumber();
   }
   handleCreateTransaction() {
-    this.props.web3Redux.networks.eth.web3.eth.sendTransaction({ value: 1, to: NULL_ADDRESS, from: COINBASE });
+    const web3 = this.props.web3Redux.networks.eth.web3;
+    web3.eth.sendTransaction({ value: 1, to: NULL_ADDRESS, from: COINBASE })
+    .then((txHash) => {
+      console.log('got tx', txHash);
+      return web3.eth.waitForMined(txHash);
+    }).then((something) => {
+      console.log('Mined tx!', something);
+    });
   }
   render() {
-    console.log('rerender!');
+    console.log(this.props.web3Redux);
     const { web3Redux, web3ReduxDataStore, test, custom } = this.props;
     return (
       <div>
@@ -72,4 +79,3 @@ function mapStateToProps({ custom, web3Redux }) {
 }
 
 export default web3Connect(mapStateToProps, { customAction })(Data);
-// export default connect(mapStateToProps, { customAction })(Data);

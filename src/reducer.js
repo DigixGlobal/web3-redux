@@ -40,19 +40,19 @@ function updateTransaction(state, action, query) {
 export default function (state = DEFAULT_STATE, action) {
   // console.log(action);
   switch (action.type) {
-    case actions.NETWORK_SET_WEB3: {
-      return updateNetwork(state, action, { meta: { $set: { enabled: action.payload.enabled } } });
-    }
     case actions.NETWORK_REMOVED: {
       const networks = { ...state.networks };
       delete networks[action.networkId];
       return { ...state, networks };
     }
+    case actions.NETWORK_SET_WEB3: {
+      return updateNetwork(state, action, { meta: { $set: { enabled: action.payload.enabled } } });
+    }
     case actions.WEB3_METHOD_SUCCESS: {
       return updateNetwork(state, action, { web3Methods: { $set: { [action.key]: action.payload } } });
     }
-    case actions.TRANSACTION_CREATED: {
-      return updateTransaction(state, action, { created: { $set: action.payload.created } });
+    case actions.TRANSACTION_UPDATED: {
+      return updateTransaction(state, action, { $merge: action.payload });
     }
     default:
       return state;
