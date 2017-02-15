@@ -4,6 +4,9 @@ import web3Connect from 'web3-redux/src';
 
 import { customAction } from '../actions';
 
+const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
+const COINBASE = '0x6d2a214876602e6ac7fe97204b295a19c844ec89';
+
 const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:6545'));
 
 class Data extends Component {
@@ -14,6 +17,10 @@ class Data extends Component {
     this.handleUnsetNetwork = this.handleUnsetNetwork.bind(this);
     this.handleRemoveNetwork = this.handleRemoveNetwork.bind(this);
     this.handleGetBlockNumber = this.handleGetBlockNumber.bind(this);
+    this.handleCreateTransaction = this.handleCreateTransaction.bind(this);
+  }
+  componentDidMount() {
+    this.props.web3Redux.setNetwork({ networkId: 'eth', web3 });
   }
   handleCustomAction() {
     this.props.customAction();
@@ -30,8 +37,11 @@ class Data extends Component {
   handleGetBlockNumber() {
     this.props.web3Redux.networks.eth.web3.eth.getBlockNumber();
   }
+  handleCreateTransaction() {
+    this.props.web3Redux.networks.eth.web3.eth.sendTransaction({ value: 1, to: NULL_ADDRESS, from: COINBASE });
+  }
   render() {
-    console.log(this.props.web3Redux);
+    console.log('rerender!');
     const { web3Redux, web3ReduxDataStore, test, custom } = this.props;
     return (
       <div>
@@ -44,6 +54,7 @@ class Data extends Component {
         {web3Redux.networks.eth &&
           <div>
             <button onClick={this.handleGetBlockNumber}>Get Block Number</button>
+            <button onClick={this.handleCreateTransaction}>Create Transaction</button>
             <br />
             <p>Block: {web3Redux.networks.eth.web3.eth.blockNumber()}</p>
           </div>
@@ -61,3 +72,4 @@ function mapStateToProps({ custom, web3Redux }) {
 }
 
 export default web3Connect(mapStateToProps, { customAction })(Data);
+// export default connect(mapStateToProps, { customAction })(Data);

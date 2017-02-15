@@ -1,4 +1,4 @@
-import { getTransaction, sendTransaction } from './actions';
+import { getTransaction, createTransaction } from './actions';
 
 export const SUPPORTED_WEB3_METHODS = {
   net: {
@@ -28,8 +28,8 @@ export const SUPPORTED_WEB3_METHODS = {
     getUncle: {},
     // getTransactionFromBlock: {},
     getTransaction: { actionCreator: getTransaction },
-    // getTransactionReceipt: {},
-    sendTransaction: { actionCreator: sendTransaction },
-    sendRawTransaction: { actionCreator: sendTransaction },
+    getTransactionReceipt: { actionCreator: getTransaction },
+    sendTransaction: { actionCreator: createTransaction },
+    sendRawTransaction: { actionCreator: createTransaction },
   },
 };

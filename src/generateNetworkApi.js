@@ -12,7 +12,7 @@ function generateWeb3Getter({ getState, networkId, methodName, groupName }) {
   if (methodName.indexOf('get') !== 0) { return null; }
   const getterFragment = methodName.split('get')[1];
   const getterName = `${getterFragment[0].toLowerCase()}${getterFragment.slice(1)}`;
-  // TODO add other statuses (fetching, error, etc.)
+  // TODO add other statuses (fetching, created, error, etc.)
   return {
     [getterName]: (...args) => {
       const state = getState();
@@ -24,14 +24,17 @@ function generateWeb3Getter({ getState, networkId, methodName, groupName }) {
   };
 }
 
+function generateWeb3ActionCreator(params) {
+  const { groupName, methodName, dispatch } = params;
+  // use the defined action creator, or fallback to regular web3 method
+  const method = SUPPORTED_WEB3_METHODS[groupName][methodName].actionCreator || web3Method;
+  return bindActionCreators({ [methodName]: (...args) => method({ args, ...params }) }, dispatch);
+}
+
 function generateWeb3Methods(params) {
   return {
-    // getter function (if it exists)
     ...generateWeb3Getter(params),
-    // action creator
-    ...bindActionCreators({
-      [params.methodName]: (...args) => web3Method({ args, ...params }),
-    }, params.dispatch),
+    ...generateWeb3ActionCreator(params),
   };
 }
 
