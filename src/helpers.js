@@ -7,5 +7,5 @@ export function degrade(fn, fallback) {
 }
 
 export function getMethodKey({ groupName, methodName, args }) {
-  return `${groupName}.${methodName}(${JSON.stringify(args)})`;
+  return `${groupName || ''}.${methodName}(${JSON.stringify(args)})`;
 }

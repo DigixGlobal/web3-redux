@@ -50,7 +50,7 @@ function generateNetworkApi({ networkId, getState, dispatch }) {
       ...o2, ...generateWeb3Methods({ methodName, networkId, getState, dispatch, groupName }),
     }), {}),
   }), {});
-
+  // nice little helper function
   web3.eth.waitForMined = (tx, pollTime = 5 * 1000) => {
     return new Promise((resolve, reject) => {
       function poll() {
@@ -65,33 +65,8 @@ function generateNetworkApi({ networkId, getState, dispatch }) {
       setTimeout(poll, 10); // timeout for testrpc
     });
   };
-
-  // deploy / get contract instances
-  networkApis[networkId].contracts = {};
-  web3.eth.contract = (abi) => {
-    return {
-      at: (address) => {
-        if (!networkApis[networkId].contracts[address]) {
-          networkApis[networkId].contracts[address] = generateContractApi({
-            abi, address, networkId, getState, dispatch, web3: networkApis[networkId].web3,
-          });
-        }
-        return networkApis[networkId].contracts[address];
-      },
-      new: (...params) => {
-        // deply a new contract
-        const instance = web3.eth.contract(abi);
-        const args = params;
-        const { data, ...rest } = args[args.length - 1];
-        args[args.length] = { data };
-        const newData = instance.new.getData(...args);
-        args[args.length] = { ...rest, data: newData };
-        return web3.eth.sendTransaction(...args)
-        .then((transactionHash) => web3.eth.waitForMined(transactionHash))
-        .then(({ contractAddress }) => instance.at(contractAddress));
-      },
-    };
-  };
+  // custom contract creation api
+  web3.eth.contract = generateContractApi({ web3, networkId, getState, dispatch, networkApi: networkApis[networkId] });
 
   return { web3 };
 }
