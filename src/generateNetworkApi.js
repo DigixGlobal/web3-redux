@@ -16,7 +16,7 @@ function generateWeb3Getter({ getState, networkId, methodName, groupName }) {
   return {
     [getterName]: (...args) => {
       const state = getState();
-      if (getterName === 'transaction') {
+      if (getterName.indexOf('transaction') === 0) {
         return degrade(() => state.networks[networkId].transactions[args[0]].value);
       }
       return degrade(() => state.networks[networkId].web3Methods[getMethodKey({ groupName, methodName, args })].value);
@@ -24,11 +24,16 @@ function generateWeb3Getter({ getState, networkId, methodName, groupName }) {
   };
 }
 
-function generateWeb3ActionCreator(params) {
-  const { groupName, methodName, dispatch } = params;
+function generateWeb3ActionCreator({ networkId, groupName, methodName, dispatch }) {
   // use the defined action creator, or fallback to regular web3 method
-  const method = SUPPORTED_WEB3_METHODS[groupName][methodName].actionCreator || web3Method;
-  return bindActionCreators({ [methodName]: (...args) => method({ args, ...params }) }, dispatch);
+  const method = networkApis[networkId].web3[groupName][methodName];
+  const acOverride = SUPPORTED_WEB3_METHODS[groupName][methodName].actionCreator;
+  const actionCreator = acOverride || web3Method;
+  return bindActionCreators({
+    [methodName]: (...args) => {
+      return actionCreator({ method, networkId, args, key: !acOverride && getMethodKey({ groupName, methodName, args }) });
+    },
+  }, dispatch);
 }
 
 function generateWeb3Methods(params) {

@@ -5,7 +5,7 @@ import web3Connect from 'web3-redux/src';
 import { customAction } from '../actions';
 
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
-const COINBASE = '0x6d2a214876602e6ac7fe97204b295a19c844ec89';
+const COINBASE = '0xf8813cdb443034cceee98d099adae7154abb9ae4';
 
 const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:6545'));
 
