@@ -42,6 +42,9 @@ export default function (state = DEFAULT_STATE, action) {
       delete networks[action.networkId];
       return { ...state, networks };
     }
+    case actions.WEB3_METHOD_SUCCESS: {
+      return updateNetwork(state, action, { web3Methods: { $set: { [action.key]: action.payload } } });
+    }
     default:
       return state;
   }

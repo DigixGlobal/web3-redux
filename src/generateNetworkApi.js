@@ -1,24 +1,58 @@
-// import { setNetwork, removeNetwork } from './actions';
-// import { bindActionCreators } from 'redux';
-//
-// export default function generateWeb3ReduxApi(dispatch) {
-//   return bindActionCreators({ setNetwork, removeNetwork }, dispatch);
-// }
+import { bindActionCreators } from 'redux';
 
-// export cache to actions so it's invalided when web3 is set
+import { web3Method } from './actions';
+import { SUPPORTED_WEB3_METHODS } from './constants';
+import { degrade, getMethodKey } from './helpers';
+
+// export cache to actions so it's invalided when web3 is reset
 export const networkApis = {};
 
-function generateNetworkApi({ networkId, state, dispatch }) {
-  console.log(networkApis[networkId]);
-  // check if we have web3...
-  return {};
+// returns the value value of the gotten web3 method
+function generateWeb3Getter({ getState, networkId, methodName, groupName }) {
+  if (methodName.indexOf('get') !== 0) { return null; }
+  const getterFragment = methodName.split('get')[1];
+  const getterName = `${getterFragment[0].toLowerCase()}${getterFragment.slice(1)}`;
+  // TODO add other statuses (fetching, error, etc.)
+  return {
+    [getterName]: (...args) => {
+      const state = getState();
+      if (getterName === 'transaction') {
+        return degrade(() => state.networks[networkId].transactions[args[0]].value);
+      }
+      return degrade(() => state.networks[networkId].web3Methods[getMethodKey({ groupName, methodName, args })].value);
+    },
+  };
 }
 
-export default function getNetworkApi({ networkId, state, dispatch }) {
+function generateWeb3Methods(params) {
+  return {
+    // getter function (if it exists)
+    ...generateWeb3Getter(params),
+    // action creator
+    ...bindActionCreators({
+      [params.methodName]: (...args) => web3Method({ args, ...params }),
+    }, params.dispatch),
+  };
+}
+
+function generateNetworkApi({ networkId, getState, dispatch }) {
+  // reduce the supported api into action creators and getters
+  const web3 = Object.keys(SUPPORTED_WEB3_METHODS).reduce((o, groupName) => ({
+    ...o, [groupName]: Object.keys(SUPPORTED_WEB3_METHODS[groupName]).reduce((o2, methodName) => ({
+      ...o2, ...generateWeb3Methods({ methodName, networkId, getState, dispatch, groupName }),
+    }), {}),
+  }), {});
+  // api.eth.contract ...
+  // api.eth.waitForMined ...
+  return { web3 };
+}
+
+export default function getNetworkApi({ networkId, getState, dispatch }) {
   // shares the same cache networkId as the web3 instance
   if (!networkApis[networkId] || !networkApis[networkId].api) {
     networkApis[networkId] = {
-      ...networkApis[networkId], api: generateNetworkApi({ networkId, state, dispatch }),
+      ...networkApis[networkId],
+      api: generateNetworkApi({ networkId, dispatch, getState }),
     };
   }
   return networkApis[networkId].api;

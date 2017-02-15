@@ -3,12 +3,17 @@ import { connect } from 'react-redux';
 import generateWeb3ReduxApi from './generateWeb3ReduxApi';
 import generateNetworkApi from './generateNetworkApi';
 
+// TODO should we scope this?
+let updatedState;
+
+function getState() { return updatedState; }
+
 function getWeb3Api(state, dispatch) {
-  // for each network that exists, create it's API
+  updatedState = state;
   return {
     ...generateWeb3ReduxApi(dispatch),
     networks: Object.keys(state.networks).reduce((o, networkId) => {
-      return { ...o, [networkId]: generateNetworkApi({ networkId, state, dispatch }) };
+      return { ...o, [networkId]: generateNetworkApi({ networkId, getState, dispatch }) };
     }, {}),
   };
 }

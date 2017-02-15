@@ -13,6 +13,7 @@ class Data extends Component {
     this.handleSetNetwork = this.handleSetNetwork.bind(this);
     this.handleUnsetNetwork = this.handleUnsetNetwork.bind(this);
     this.handleRemoveNetwork = this.handleRemoveNetwork.bind(this);
+    this.handleGetBlockNumber = this.handleGetBlockNumber.bind(this);
   }
   handleCustomAction() {
     this.props.customAction();
@@ -26,8 +27,12 @@ class Data extends Component {
   handleRemoveNetwork() {
     this.props.web3Redux.removeNetwork({ networkId: 'eth' });
   }
+  handleGetBlockNumber() {
+    this.props.web3Redux.networks.eth.web3.eth.getBlockNumber();
+  }
   render() {
-    const { web3Redux, test, custom } = this.props;
+    console.log(this.props.web3Redux);
+    const { web3Redux, web3ReduxDataStore, test, custom } = this.props;
     return (
       <div>
         <button onClick={this.handleCustomAction}>Custom Action</button>
@@ -35,17 +40,24 @@ class Data extends Component {
         <button onClick={this.handleSetNetwork}>Set</button>
         <button onClick={this.handleUnsetNetwork}>Unset</button>
         <button onClick={this.handleRemoveNetwork}>Delete</button>
+        <br />
+        {web3Redux.networks.eth &&
+          <div>
+            <button onClick={this.handleGetBlockNumber}>Get Block Number</button>
+            <br />
+            <p>Block: {web3Redux.networks.eth.web3.eth.blockNumber()}</p>
+          </div>
+        }
         <pre>
-          <code>{JSON.stringify({ web3Redux, test, custom }, null, 2)}</code>
+          <code>{JSON.stringify({ web3Redux, web3ReduxDataStore, test, custom }, null, 2)}</code>
         </pre>
       </div>
     );
   }
 }
 
-function mapStateToProps({ custom }) {
-  return { test: true, custom };
+function mapStateToProps({ custom, web3Redux }) {
+  return { test: true, custom, web3ReduxDataStore: web3Redux };
 }
 
 export default web3Connect(mapStateToProps, { customAction })(Data);
-// export default connect(mapStateToProps, { setNetwork, removeNetwork })(Data);
