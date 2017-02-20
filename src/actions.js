@@ -23,7 +23,11 @@ function removeWeb3(networkId) {
 export function setNetwork({ networkId, web3 }) {
   removeWeb3(networkId);
   networkApis[networkId] = { web3 };
-  return { type: actions.NETWORK_SET_WEB3, networkId, payload: { enabled: !!web3 } };
+  return { type: actions.NETWORK_SET_WEB3, networkId, payload: { enabled: !!web3, connecting: !!web3 } };
+}
+
+export function updateNetwork({ networkId, payload }) {
+  return { type: actions.NETWORK_SET_WEB3, networkId, payload };
 }
 
 export function removeNetwork({ networkId }) {
