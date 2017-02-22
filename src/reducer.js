@@ -3,7 +3,9 @@ import { actions } from './actions';
 
 const DEFAULT_STATE = {
   networks: {},
-  meta: {},
+  meta: {
+    pending: 0,
+  },
 };
 
 function updateNetwork(state, action, query) {
@@ -25,6 +27,12 @@ function updateContract(state, action, query) {
 
 export default function (state = DEFAULT_STATE, action) {
   switch (action.type) {
+    case actions.XHR: {
+      // total pending xhr requests; update network and total
+      const pendingUpdate = { meta: { pending: { $apply: (n = 0) => n + action.count } } };
+      const updatedState = updateNetwork(state, action, pendingUpdate);
+      return update(updatedState, pendingUpdate);
+    }
     case actions.NETWORK_REMOVED: {
       const networks = { ...state.networks };
       delete networks[action.networkId];

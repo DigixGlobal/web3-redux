@@ -17,7 +17,7 @@ function generateWeb3Getter({ getState, networkId, methodName, groupName }) {
     }
     return degrade(() => state.networks[networkId].web3Methods[getMethodKey({ groupName, methodName, args })]);
   };
-  const getter = { [getterName]: (...args) => meta(...args).value };
+  const getter = { [getterName]: (...args) => (meta(...args) || {}).value };
   getter.meta = meta;
   return getter;
 }
@@ -89,15 +89,16 @@ function generateNetworkApi({ networkId, getState, dispatch }) {
     // failed to connect
     return 'disconnected';
   };
-  web3.pendingRequests = () => { console.log('todo'); };
+  web3.pendingRequests = () => (getState().networks[networkId].meta || {}).pending || false;
   // INITIALIZATION / STATUS
   // get the first block to update connection status
   if (networkApis[networkId].web3) {
     const engine = networkApis[networkId].web3.currentProvider;
-    engine.on('error', (err) => { console.error(err); });
+    engine.on('error', (err) => console.error('got err', err));
     engine._fetchLatestBlock((err, res) => {
-      if (err) { return dispatch(updateNetwork({ networkId, payload: { connecting: false, connected: false } })); }
-      // update the network state
+      if (err) { return setTimeout(() => dispatch(updateNetwork({ networkId, payload: { connecting: false, connected: false } })), 1); }
+      // if (err) { return dispatch(updateNetwork({ networkId, payload: { connecting: false, connected: false } })); }
+      // // update the network state
       dispatch(updateNetwork({ networkId, payload: { connecting: false, connected: true } }));
       // update the block number (without making another request)s;
       const value = parseInt(res.number.toString('hex'), 16);

@@ -3,6 +3,7 @@ import { networkApis } from './generateNetworkApi';
 const NAMESPACE = 'web3-redux';
 
 export const actions = {
+  XHR: `${NAMESPACE} xhr update`,
   NETWORK_SET_WEB3: `${NAMESPACE} network set web3`,
   NETWORK_REMOVED: `${NAMESPACE} network removed`,
   WEB3_METHOD_SUCCESS: `${NAMESPACE} web3 method success`,
@@ -36,16 +37,22 @@ export function removeNetwork({ networkId }) {
 }
 
 // TODO handle errors
-function callMethod({ method, args }, callback) {
+function callMethod({ method, args, networkId }, callback) {
   return (dispatch) => {
+    dispatch({ type: actions.XHR, networkId, count: 1 });
     return new Promise((resolve, reject) => {
       try {
         method(...args, (err, value) => {
-          if (err) { return reject(err); }
+          if (err) {
+            dispatch({ type: actions.XHR, networkId, count: -1 });
+            return reject(err);
+          }
+          dispatch({ type: actions.XHR, networkId, count: -1 });
           callback({ dispatch, value });
           return resolve(value);
         });
       } catch (err) {
+        dispatch({ type: actions.XHR, networkId, count: -1 });
         reject(err);
       }
     });
@@ -53,30 +60,30 @@ function callMethod({ method, args }, callback) {
 }
 
 export function web3Method({ method, networkId, args, key }) {
-  return callMethod({ method, args }, ({ dispatch, value }) => {
+  return callMethod({ method, args, networkId }, ({ dispatch, value }) => {
     dispatch({ type: actions.WEB3_METHOD_SUCCESS, networkId, key, payload: { value, updated: new Date() } });
   });
 }
 
 export function getTransaction({ args, method, networkId }) {
-  return callMethod({ method, args }, ({ dispatch, value }) => {
+  return callMethod({ method, args, networkId }, ({ dispatch, value }) => {
     dispatch({ type: actions.TRANSACTION_UPDATED, networkId, key: args[0], payload: { value, updated: new Date() } });
   });
 }
 
 export function createTransaction({ args, method, networkId }) {
-  return callMethod({ method, args }, ({ dispatch, value }) => {
+  return callMethod({ method, args, networkId }, ({ dispatch, value }) => {
     dispatch({ type: actions.TRANSACTION_UPDATED, networkId, key: value, payload: { created: new Date() } });
   });
 }
 
 export function callContractMethod({ networkId, key, args, address, method }) {
-  return callMethod({ method, args }, ({ dispatch, value }) => {
+  return callMethod({ method, args, networkId }, ({ dispatch, value }) => {
     dispatch({ type: actions.CONTRACT_METHOD_SUCCESS, address, networkId, key, payload: { value, updated: new Date() } });
   });
 }
 export function createContractTransaction({ networkId, args, address, key, method }) {
-  return callMethod({ method, args }, ({ dispatch, value }) => {
+  return callMethod({ method, args, networkId }, ({ dispatch, value }) => {
     dispatch({ type: actions.TRANSACTION_UPDATED, networkId, key: value, payload: { created: new Date() } });
     dispatch({ type: actions.CONTRACT_TRANSACTION_CREATED, address, networkId, key, payload: { value } }); // relational
   });

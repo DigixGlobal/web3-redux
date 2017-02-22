@@ -11,7 +11,7 @@ function getState() { return updatedState; }
 function getWeb3Api(state, dispatch) {
   updatedState = state;
   return {
-    ...generateWeb3ReduxApi(dispatch),
+    ...generateWeb3ReduxApi(dispatch, getState),
     networks: Object.keys(state.networks).reduce((o, networkId) => {
       return { ...o, [networkId]: generateNetworkApi({ networkId, getState, dispatch }) };
     }, {}),
