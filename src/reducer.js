@@ -9,7 +9,7 @@ const DEFAULT_STATE = {
 };
 
 function updateNetwork(state, action, query) {
-  const network = state.networks[action.networkId] || { meta: {}, transactions: {}, contracts: {} };
+  const network = state.networks[action.networkId] || { web3Methods: {}, meta: {}, transactions: {}, contracts: {} };
   return { ...state, networks: { ...state.networks, [action.networkId]: update(network, query) } };
 }
 
@@ -42,7 +42,7 @@ export default function (state = DEFAULT_STATE, action) {
       return updateNetwork(state, action, { meta: { $merge: action.payload } });
     }
     case actions.WEB3_METHOD_SUCCESS: {
-      return updateNetwork(state, action, { web3Methods: { $set: { [action.key]: action.payload } } });
+      return updateNetwork(state, action, { web3Methods: { $merge: { [action.key]: action.payload } } });
     }
     case actions.TRANSACTION_UPDATED: {
       return updateTransaction(state, action, { $merge: action.payload });
