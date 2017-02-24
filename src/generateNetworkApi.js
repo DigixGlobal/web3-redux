@@ -62,15 +62,17 @@ function generateNetworkApi({ networkId, getState, dispatch }) {
   // EXTEDNED API
   // nice little helper function
   web3.eth.waitForMined = (tx, pollTime = 5 * 1000) => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       function poll() {
         return web3.eth.getTransactionReceipt(tx).then((res) => {
-          if (res) {
+          if (res && res.blockNumber) {
             resolve(res);
           } else {
             setTimeout(poll, pollTime);
           }
-        }).catch(reject);
+        }).catch(() => {
+          setTimeout(poll, pollTime);
+        });
       }
       setTimeout(poll, 10); // timeout for testrpc
     });
