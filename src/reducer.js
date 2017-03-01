@@ -21,7 +21,7 @@ function updateTransaction(state, action, query) {
 
 function updateContract(state, action, query) {
   const contracts = state.networks[action.networkId].contracts || {};
-  const contract = contracts[action.address] || { transactions: [] };
+  const contract = contracts[action.address] || { transactions: [], calls: {} };
   return updateNetwork(state, action, { contracts: { $set: { ...contracts, [action.address]: update(contract, query) } } });
 }
 
@@ -48,7 +48,7 @@ export default function (state = DEFAULT_STATE, action) {
       return updateTransaction(state, action, { $merge: action.payload });
     }
     case actions.CONTRACT_METHOD_SUCCESS: {
-      return updateContract(state, action, { calls: { $set: { [action.key]: action.payload } } });
+      return updateContract(state, action, { calls: { $merge: { [action.key]: action.payload } } });
     }
     case actions.CONTRACT_TRANSACTION_CREATED: {
       return updateContract(state, action, { transactions: { $push: [action.payload.value] } });
