@@ -91,6 +91,7 @@ function generateNetworkApi({ networkId, getState, dispatch }) {
     // failed to connect
     return 'disconnected';
   };
+  web3.isConnected = () => web3.connectionStatus() === 'connected';
   web3.pendingRequests = () => (getState().networks[networkId].meta || {}).pending || false;
   // INITIALIZATION / STATUS
   // get the first block to update connection status
