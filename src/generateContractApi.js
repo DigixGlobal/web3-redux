@@ -2,6 +2,12 @@ import { bindActionCreators } from 'redux';
 import { callContractMethod, createContractTransaction } from './actions';
 import { degrade, getMethodKey } from './helpers';
 
+
+function parsedName(name) {
+  if (name[0] === '_') { return name.slice(1); }
+  return name;
+}
+
 function generateContractInstanceApi({ abi, address, networkId, getState, dispatch, web3 }) {
   // cached version doesn't exist, create it
   const contractInstance = web3.eth.contract(abi).at(address);
@@ -21,7 +27,14 @@ function generateContractInstanceApi({ abi, address, networkId, getState, dispat
     }, dispatch);
     // base getter
     const contractMethod = (...args) => {
-      return degrade(() => getState().networks[networkId].contracts[address].calls[getMethodKey({ methodName, args })].value);
+      const value = degrade(() => getState().networks[networkId].contracts[address].calls[getMethodKey({ methodName, args })].value);
+      // return value if it's not an array
+      if (!Array.isArray(value)) { return value; }
+      // map the response with the definition
+      // TODO cache this on save ?
+      return definition.outputs.reduce((obj, output, i) => {
+        return { ...obj, [parsedName(output.name)]: value[i] };
+      }, {});
     };
     // add actions to base getter
     contractMethod.call = actions.call;
