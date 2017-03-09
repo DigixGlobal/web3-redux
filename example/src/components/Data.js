@@ -92,7 +92,7 @@ class Data extends Component {
             {this.state.deployedContract &&
               <div>
                 Contract address: {this.state.deployedContract}
-                <br/>
+                <br />
                 <button onClick={this.handleContractCall}>Call Contract</button>
                 <button onClick={this.handleContractTransaction}>Create Contract Transaction</button>
               </div>
