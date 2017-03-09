@@ -1,5 +1,3 @@
-import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
 import generateWeb3ReduxApi from './generateWeb3ReduxApi';
 import generateNetworkApi from './generateNetworkApi';
 
@@ -18,26 +16,20 @@ function getWeb3Api(state, dispatch) {
   };
 }
 
-export default function web3Connect(passedMapStateToProps, passedActions) {
-  // allow user to map custom map
-  function mapStateToProps(state) {
-    const passedProps = passedMapStateToProps && passedMapStateToProps(state);
-    return { ...passedProps, web3Redux: state.web3Redux };
-  }
+export function mapStateToProps(state) {
+  return { web3Redux: state.web3Redux };
+}
 
-  function mapDispatchToProps(dispatch) {
-    const passedActionCreators = passedActions && bindActionCreators(passedActions, dispatch);
-    return { dispatch, ...passedActionCreators };
-  }
-  function mergeProps(stateProps, dispatchProps, ownProps) {
-    const { dispatch, ...customActions } = dispatchProps;
-    return {
-      ...stateProps,
-      ...ownProps,
-      ...customActions,
-      web3Redux: getWeb3Api(stateProps.web3Redux, dispatch),
-    };
-  }
+export function mapDispatchToProps(dispatch) {
+  return { dispatch };
+}
 
-  return connect(mapStateToProps, mapDispatchToProps, mergeProps);
+export function mergeProps(stateProps, dispatchProps, ownProps) {
+  const { dispatch, ...customActions } = dispatchProps;
+  return {
+    ...stateProps,
+    ...ownProps,
+    ...customActions,
+    web3Redux: getWeb3Api(stateProps.web3Redux, dispatch),
+  };
 }
