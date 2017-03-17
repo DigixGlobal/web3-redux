@@ -37,7 +37,7 @@ export function removeNetwork({ networkId }) {
 }
 
 export function decorateTransactionArgs({ args = [], networkId }) {
-  const { getDefaultAddress, web3 } = networkApis[networkId];
+  const { getDefaultAddress } = networkApis[networkId];
   // if getter isn't set, do nothign
   if (!getDefaultAddress) {
     return args;
@@ -53,7 +53,7 @@ export function decorateTransactionArgs({ args = [], networkId }) {
     return args;
   }
   // if the last argument isn't an object (or is a big number), concat the `from`
-  if (typeof lastArg !== 'object' || !web3.utils.isBigNumber(lastArg)) {
+  if (typeof lastArg !== 'object' || lastArg.constructor && lastArg.constructor.name === 'BigNumber') {
     return args.concat([{ from }]);
   }
   // otherwise, merge `from` into the last arg
