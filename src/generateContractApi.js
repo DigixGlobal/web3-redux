@@ -1,6 +1,6 @@
 import { bindActionCreators } from 'redux';
 import { callContractMethod, createContractTransaction } from './actions';
-import { degrade, getMethodKey } from './helpers';
+import { degrade, getMethodKey, decorateTransactionArgs } from './helpers';
 
 
 function parsedName(name) {
@@ -22,7 +22,7 @@ function generateContractInstanceApi({ abi, address, networkId, getState, dispat
         networkId, args, address, key: getMethodKey({ methodName, args }), method: contractInstance[methodName].call,
       }),
       sendTransaction: (...args) => createContractTransaction({
-        networkId, args, address, key: getMethodKey({ methodName, args }), method: contractInstance[methodName].sendTransaction,
+        networkId, args, address, method: contractInstance[methodName].sendTransaction,
       }),
     }, dispatch);
     // base getter
@@ -67,7 +67,8 @@ export default function generateContractAPI({ web3, networkApi, networkId, getSt
         args[args.length] = { data };
         const newData = instance.new.getData(...args);
         args[args.length] = { ...rest, data: newData };
-        return web3.eth.sendTransaction(...args)
+        const decoratedArgs = decorateTransactionArgs({ args, networkId });
+        return web3.eth.sendTransaction(...decoratedArgs)
         .then((transactionHash) => web3.eth.waitForMined(transactionHash))
         .then(({ contractAddress }) => api.at(contractAddress));
       },
