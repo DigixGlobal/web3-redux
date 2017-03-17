@@ -62,7 +62,6 @@ export function decorateTransactionArgs({ args = [], networkId }) {
 
 function callMethod({ method, args, networkId, transaction }, callback) {
   const decoratedArgs = transaction ? decorateTransactionArgs({ args, networkId }) : args;
-  console.log(args, decoratedArgs);
   return (dispatch) => {
     dispatch({ type: actions.XHR, networkId, count: 1 });
     return new Promise((resolve, reject) => {
