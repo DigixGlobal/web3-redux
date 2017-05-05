@@ -28,7 +28,10 @@ function generateContractInstanceApi({ abi, address, networkId, getState, dispat
     // base getter
     const contractMethod = (...args) => {
       const value = degrade(() => getState().networks[networkId].contracts[address].calls[getMethodKey({ methodName, args })].value);
-      // return value if it's not an array
+      // return value if it's not an array... ?
+      if (((definition.outputs || [{}])[0]).type === 'address[]') {
+        return value;
+      }
       if (!Array.isArray(value)) { return value; }
       // map the response with the definition
       // TODO cache this on save ?

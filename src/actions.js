@@ -53,7 +53,7 @@ export function decorateTransactionArgs({ args = [], networkId }) {
     return args;
   }
   // if the last argument isn't an object (or is a big number), concat the `from`
-  if (typeof lastArg !== 'object' || lastArg.constructor && lastArg.constructor.name === 'BigNumber') {
+  if (typeof lastArg !== 'object' || (lastArg.constructor && lastArg.constructor.name === 'BigNumber')) {
     return args.concat([{ from }]);
   }
   // otherwise, merge `from` into the last arg
