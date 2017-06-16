@@ -1,6 +1,6 @@
 import { bindActionCreators } from 'redux';
-import { callContractMethod, createContractTransaction } from './actions';
-import { degrade, getMethodKey, decorateTransactionArgs } from './helpers';
+import { callContractMethod, createContractTransaction, decorateTransactionArgs } from './actions';
+import { degrade, getMethodKey } from './helpers';
 
 
 function parsedName(name) {
@@ -42,11 +42,18 @@ function generateContractInstanceApi({ abi, address, networkId, getState, dispat
     // add actions to base getter
     contractMethod.call = actions.call;
     contractMethod.sendTransaction = actions.sendTransaction;
+    contractMethod.getData = contractInstance[methodName].getData;
     // // reduce with added actions
     return { ...o, [methodName]: contractMethod };
   }, {});
   // decorate
   api.address = address;
+  api.call = (obj) => {
+    return Promise.all(Object.keys(obj).map(k => api[k].call(...obj[k])));
+  };
+  api.propsToState = (ctx, obj) => {
+    return Promise.all(Object.keys(obj).map(k => api[k].call(...obj[k]).then(v => ctx.setState({ [k]: v }))));
+  };
   return api;
 }
 
@@ -67,13 +74,10 @@ export default function generateContractAPI({ web3, networkApi, networkId, getSt
         const instance = networkApi.web3.eth.contract(abi);
         const args = params;
         const { data, ...rest } = args[args.length - 1];
-        args[args.length] = { data };
+        args[args.length - 1] = { data };
         const newData = instance.new.getData(...args);
-        args[args.length] = { ...rest, data: newData };
-        const decoratedArgs = decorateTransactionArgs({ args, networkId });
-        return web3.eth.sendTransaction(...decoratedArgs)
-        .then((transactionHash) => web3.eth.waitForMined(transactionHash))
-        .then(({ contractAddress }) => api.at(contractAddress));
+        const decoratedArgs = decorateTransactionArgs({ networkId, args: [{ ...rest, data: newData }] });
+        return web3.eth.sendTransaction(...decoratedArgs);
       },
     };
     return api;

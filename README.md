@@ -1,5 +1,7 @@
 # web3-redux
 
+Requires a web3 provider engine using `eth-block-tracker`.
+
 ## API
 
 ```javascript
@@ -28,33 +30,9 @@
 {
   at(),
   new(),
-  [method]: {
-    getData(),
+  [method](): {
     call(),
     sendTransaction(),
-  }
-}
-```
-
-## Storage
-
-```javascript
-meta: {
-  connection:
-  pending:
-},
-networks: {
-  [networkId]: {
-    meta: {
-      connection:
-      pending:
-    }
-    transactions: {
-
-    }
-    web3: {
-
-    }
   }
 }
 ```

@@ -97,16 +97,20 @@ function generateNetworkApi({ networkId, getState, dispatch }) {
   // get the first block to update connection status
   if (networkApis[networkId].web3) {
     const engine = networkApis[networkId].web3.currentProvider;
-    engine.on('error', (err) => console.error('got err', err));
-    engine._fetchLatestBlock((err, res) => {
-      if (err) { return setTimeout(() => dispatch(updateNetwork({ networkId, payload: { connecting: false, connected: false } })), 1); }
-      // if (err) { return dispatch(updateNetwork({ networkId, payload: { connecting: false, connected: false } })); }
-      // // update the network state
+    // TODO determine polling strategy
+    engine.on('block', (block) => {
+      engine._blockTracker.stop();
+      // update the network statesou
       dispatch(updateNetwork({ networkId, payload: { connecting: false, connected: true } }));
-      // update the block number (without making another request)s;
-      const value = parseInt(res.number.toString('hex'), 16);
+      // update the block number (without making another requests;
+      const value = parseInt(block.number.toString('hex'), 16);
       const key = getMethodKey({ groupName: 'eth', methodName: 'getBlockNumber', args: [] });
       return dispatch({ type: actions.WEB3_METHOD_SUCCESS, networkId, key, payload: { value, updated: new Date() } });
+    });
+    // connection error
+    engine._blockTracker.start().catch(() => {
+      engine._blockTracker.stop();
+      dispatch(updateNetwork({ networkId, payload: { connecting: false, connected: false } }));
     });
   }
   return { web3 };

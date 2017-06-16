@@ -8,6 +8,7 @@ import { customAction } from '../actions';
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
 const COINBASE = '0xf8813cdb443034cceee98d099adae7154abb9ae4';
 
+// TODO update example with web3-provider engine
 const web3Instance = new Web3(new Web3.providers.HttpProvider('http://localhost:6545'));
 
 class Data extends Component {
