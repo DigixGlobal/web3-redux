@@ -47,6 +47,7 @@ function generateContractInstanceApi({ abi, address, networkId, getState, dispat
     return { ...o, [methodName]: contractMethod };
   }, {});
   // decorate
+  api.contract = contractInstance;
   api.address = address;
   api.call = (obj) => {
     return Promise.all(Object.keys(obj).map(k => api[k].call(...obj[k])));
