@@ -1,3 +1,5 @@
+import { connect } from 'react-redux';
+
 import generateWeb3ReduxApi from './generateWeb3ReduxApi';
 import generateNetworkApi from './generateNetworkApi';
 
@@ -32,4 +34,8 @@ export function mergeProps(stateProps, dispatchProps, ownProps) {
     ...customActions,
     web3Redux: getWeb3Api(stateProps.web3Redux, dispatch),
   };
+}
+
+export function web3Connect(Component) {
+  return connect(mapStateToProps, mapDispatchToProps, mergeProps)(Component);
 }
