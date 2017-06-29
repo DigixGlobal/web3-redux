@@ -1,5 +1,5 @@
-import { setNetwork, removeNetwork } from './actions';
 import { bindActionCreators } from 'redux';
+import { setNetwork, removeNetwork } from './actions';
 
 // cache it
 let web3ReduxApi;

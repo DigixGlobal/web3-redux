@@ -10,12 +10,14 @@ function getState() { return updatedState; }
 
 function getWeb3Api(state, dispatch) {
   updatedState = state;
-  return {
+  const api = {
     ...generateWeb3ReduxApi(dispatch, getState),
     networks: Object.keys(state.networks).reduce((o, networkId) => {
       return { ...o, [networkId]: generateNetworkApi({ networkId, getState, dispatch }) };
     }, {}),
   };
+  api.web3 = id => (api.networks[id] || {}).web3;
+  return api;
 }
 
 export function mapStateToProps(state) {

@@ -1,6 +1,6 @@
 {
   "name": "web3-redux",
-  "version": "0.4.2",
+  "version": "0.4.6",
   "description": "Reduxified Web3",
   "author": "Chris Hitchcott <hitchcott@gmail.com> (http://hitchcott.com)",
   "main": "src/index.js",
@@ -12,7 +12,6 @@
   "dependencies": {
     "deepmerge": "^1.3.1",
     "immutability-helper": "^2.1.1",
-    "immutable": "^3.8.1",
     "react-redux": "^5.0.2",
     "redux": "^3.6.0",
     "uuid": "^3.0.1"
