@@ -63,12 +63,13 @@ export default function generateContractAPI({ web3, networkApi, networkId, getSt
   return (abi) => {
     const api = {
       at(address) {
-        if (!cache[address]) {
-          cache[address] = generateContractInstanceApi({
+        const cacheKey = `${networkId}_${address}_${abi.length}`;
+        if (!cache[cacheKey]) {
+          cache[cacheKey] = generateContractInstanceApi({
             abi, address, networkId, getState, dispatch, web3: networkApi.web3,
           });
         }
-        return cache[address];
+        return cache[cacheKey];
       },
       new(...params) {
         // deply a new contract
