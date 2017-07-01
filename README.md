@@ -75,9 +75,9 @@ web3.eth.blockNumber() // gets returned value from redux store
 // .. and so on for all the web3.eth `get` methods
 web3.eth.sendTransaction(20, { from: account }) // will make a transaction, return the promise
 .then(txHash => web3.eth.waitForMined(txHash)) // wait for the tx id to be mined
-.then((tx) => console.log('got the tx!', tx)); // after mined, it returns populated tx data and logs
+.then(tx => console.log('got the tx!', tx)); // after mined, it returns populated tx data and logs
 // or call `getTransaction` anywhere to pull it from redux store
-web3.eth.getTransaction(tx);
+web3.eth.getTransaction(txHash);
 ```
 
 ## API
@@ -316,4 +316,4 @@ web3Redux: {
 
 ## TODO
 
-Better docs, tests, examples
+Better test
