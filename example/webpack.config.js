@@ -1,5 +1,5 @@
+/* eslint-disable import/no-extraneous-dependencies */
 const path = require('path');
-const fs = require('fs');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
@@ -8,7 +8,7 @@ module.exports = {
     'react-hot-loader/patch',
     'webpack-dev-server/client?http://localhost:8080',
     'webpack/hot/only-dev-server',
-    './src/index.js',
+    './src/index.jsx',
   ],
   module: {
     loaders: [{
@@ -18,11 +18,11 @@ module.exports = {
       test: /\.json$/,
       loader: 'json-loader',
     }, {
-      test: /\.js$/,
+      test: /\.(js|jsx)$/,
       include: [
         path.resolve('./src'),
-        // TODO unlink
-        fs.realpathSync('./node_modules/web3-redux'),
+        path.resolve('./node_modules/web3-redux'),
+        path.resolve('../src'),
       ],
       loader: 'babel-loader',
     }],
@@ -33,7 +33,11 @@ module.exports = {
     new HtmlWebpackPlugin({ template: './src/index.html' }),
   ],
   resolve: {
-    modules: ['node_modules', path.join(__dirname, 'node_modules')],
+    modules: [path.join(__dirname, 'node_modules')],
+    extensions: ['.js', '.jsx'],
+  },
+  resolveLoader: {
+    modules: [path.join(__dirname, 'node_modules')],
   },
   devtool: '#module-inline-source-map',
   devServer: {

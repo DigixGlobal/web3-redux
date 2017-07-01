@@ -1,7 +1,9 @@
-import { connect } from 'react-redux';
-
 import generateWeb3ReduxApi from './generateWeb3ReduxApi';
 import generateNetworkApi from './generateNetworkApi';
+
+import reducer from './reducer';
+
+export { reducer };
 
 // TODO should we scope this? this the right place to put it?
 let updatedState;
@@ -38,6 +40,6 @@ export function mergeProps(stateProps, dispatchProps, ownProps) {
   };
 }
 
-export function web3Connect(Component) {
+export function web3Connect(connect, Component) {
   return connect(mapStateToProps, mapDispatchToProps, mergeProps)(Component);
 }

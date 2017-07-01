@@ -1,12 +1,84 @@
 # web3-redux
 
-Requires a web3 provider engine using `eth-block-tracker`.
+react-redux web3 api - used in [Spectrum](https://github.com/spectrum/spectrum).
 
 ## Usage
 
 `npm install web3-redux`
 
-See [/example](https://github.com/DigixGlobal/web3-redux/tree/master/example/src) (TODO UPDATE).
+For a full example, see [/example](https://github.com/DigixGlobal/web3-redux/tree/master/example/src)
+
+Demo the example with `npm run testrpc` -> `npm start`
+
+To use, web3-redux, simply:
+
+1. Add the web3Redux reducer to your redux store
+
+```javascript
+import { reducer as web3Redux } from 'web3-redux';
+
+// ...
+
+combineReducers({ web3Redux })
+
+// ...
+
+```
+
+2. Connect your components
+
+3. Register your web3 provider engine using `web3-provider-engine` 13+
+
+```javascript
+// example component
+
+import Web3 from 'web3';
+import { connect } from 'react-redux';
+import ProviderEngine from 'web3-provider-engine';
+import RpcSubprovider from 'web3-provider-engine/subproviders/rpc';
+
+// compose a simple provider using web3-provider-engine
+const engine = new ProviderEngine();
+engine.addProvider(new RpcSubprovider({ rpcUrl: 'https://mainnet.infura.io' }));
+const web3 = new Web3(engine);
+
+class MyComponent extends Component {
+  componentDidMount() {
+    // you probably want to do custom logic for setting
+    this.props.web3Redux.setNetwork({ networkId: 'eth', web3 });
+  }
+  handleGetBlockNumber() {
+    this.props.web3Redux.web3('eth').eth.getBlockNumber();
+  }
+  render() {
+    cosnt web3 = this.props.web3Redux.web3('eth');
+    if (!web3 || !web3.isConnected()) { return <p>Connecting...</p>; }
+    return (
+      <div>
+        <p>Block: {web3.eth.blockNumber() || '?'}</p>
+        <button onClick={this.handleGetBlockNumber}>Get Block Number</button>
+      </div>
+    )
+  }
+}
+
+export default web3Connect(connect, YourComponent);
+```
+
+## Interaction
+
+We support most of the web3 api, and contract methods.
+
+```javascript
+web3.eth.getBlockNumber() // makes a call to the server and saves response in redux
+web3.eth.blockNumber() // gets returned value from redux store
+// .. and so on for all the web3.eth `get` methods
+web3.eth.sendTransaction(20, { from: account }) // will make a transaction, return the promise
+.then(txHash => web3.eth.waitForMined(txHash)) // wait for the tx id to be mined
+.then((tx) => console.log('got the tx!', tx)); // after mined, it returns populated tx data and logs
+// or call `getTransaction` anywhere to pull it from redux store
+web3.eth.getTransaction(tx);
+```
 
 ## API
 

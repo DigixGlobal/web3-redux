@@ -1,20 +1,17 @@
 {
   "extends": "eslint-config-airbnb",
+  "parser": "babel-eslint",
   "env": {
-    "mocha": true
+    "browser": true
   },
   "globals": {
     "expect": true,
   },
   "rules": {
+    "react/forbid-prop-types": [0],
     "react/prefer-stateless-function": [0],
     "max-len": [0],
     "arrow-body-style": [0],
-    "no-underscore-dangle": [0],
-  },
-  "parserOptions": {
-    "ecmaFeatures": {
-      "experimentalObjectRestSpread": true
-    }
+    "no-underscore-dangle": [0]
   }
 }

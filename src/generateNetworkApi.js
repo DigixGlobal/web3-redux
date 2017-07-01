@@ -53,7 +53,8 @@ function generateNetworkApi({ networkId, getState, dispatch }) {
   // WEB3 API WRAPPER
   // reduce the supported api into action creators and getters
   const web3 = Object.keys(SUPPORTED_WEB3_METHODS).reduce((o, groupName) => ({
-    ...o, [groupName]: Object.keys(SUPPORTED_WEB3_METHODS[groupName]).reduce((o2, methodName) => ({
+    ...o,
+    [groupName]: Object.keys(SUPPORTED_WEB3_METHODS[groupName]).reduce((o2, methodName) => ({
       ...o2, ...generateWeb3Methods({ methodName, networkId, getState, dispatch, groupName }),
     }), {}),
   }), {});
@@ -96,23 +97,32 @@ function generateNetworkApi({ networkId, getState, dispatch }) {
   web3.networkId = networkId;
   // INITIALIZATION / STATUS
   // get the first block to update connection status
+  function gotBlock(block) {
+    // update the network statesou
+    dispatch(updateNetwork({ networkId, payload: { connecting: false, connected: true } }));
+    // update the block number (without making another requests;
+    const value = parseInt(block.number.toString('hex'), 16);
+    const key = getMethodKey({ groupName: 'eth', methodName: 'getBlockNumber', args: [] });
+    return dispatch({ type: actions.WEB3_METHOD_SUCCESS, networkId, key, payload: { value, updated: new Date() } });
+  }
   if (networkApis[networkId].web3) {
     const engine = networkApis[networkId].web3.currentProvider;
-    // TODO determine polling strategy
+
     engine.on('block', (block) => {
       engine._blockTracker.stop();
-      // update the network statesou
-      dispatch(updateNetwork({ networkId, payload: { connecting: false, connected: true } }));
-      // update the block number (without making another requests;
-      const value = parseInt(block.number.toString('hex'), 16);
-      const key = getMethodKey({ groupName: 'eth', methodName: 'getBlockNumber', args: [] });
-      return dispatch({ type: actions.WEB3_METHOD_SUCCESS, networkId, key, payload: { value, updated: new Date() } });
+      gotBlock(block);
     });
-    // connection error
-    engine._blockTracker.start().catch(() => {
-      engine._blockTracker.stop();
-      dispatch(updateNetwork({ networkId, payload: { connecting: false, connected: false } }));
-    });
+
+    if (engine.currentBlock) {
+      gotBlock(engine.currentBlock);
+    } else {
+      // connection error?
+      engine._blockTracker.start().catch(() => {
+        engine.started = true;
+        engine._blockTracker.stop();
+        dispatch(updateNetwork({ networkId, payload: { connecting: false, connected: false } }));
+      });
+    }
   }
   return { web3 };
 }
