@@ -57,7 +57,15 @@ export function decorateTransactionArgs({ args = [], networkId }) {
     return args.concat([{ from }]);
   }
   // otherwise, merge `from` into the last arg
-  return args.slice(0, -1).concat([{ ...lastArg, from }]);
+  const web3Params = { ...lastArg, from };
+
+  // ensure we don't attach undefined args
+  const { nonce, gasPrice, gas, ...sanitized } = web3Params;
+  if (nonce) { sanitized.nonce = nonce; }
+  if (gasPrice) { sanitized.gasPrice = gasPrice; }
+  if (gas) { sanitized.gas = gas; }
+
+  return args.slice(0, -1).concat([sanitized]);
 }
 
 function callMethod({ method, args, networkId, transaction }, callback) {
