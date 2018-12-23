@@ -5,7 +5,7 @@
   "author": "Chris Hitchcott <hitchcott@gmail.com> (http://hitchcott.com)",
   "scripts": {
     "start": "webpack-dev-server",
-    "testrpc": "testrpc -p 6545 -s 'fun roast horse offer onion permit appear random again defense crouch car'"
+    "testrpc": "ganache-cli -p 6545 -m 'fun roast horse offer onion permit appear random again defense crouch car'"
   },
   "dependencies": {
     "json-loader": "^0.5.4",
