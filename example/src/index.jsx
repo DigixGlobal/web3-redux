@@ -11,7 +11,7 @@ const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
 const store = createStore(
   combineReducers({ web3Redux, custom }),
-  composeEnhancers(applyMiddleware(thunk.default ? tunk.default : thunk))
+  composeEnhancers(applyMiddleware(thunk.default ? thunk.default : thunk))
 );
 
 render(
